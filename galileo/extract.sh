@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -xe
 
 export API_ENDPOINT=${API_ENDPOINT-http://localhost:8080}
 export COMMIT=${COMMIT-master}
@@ -11,3 +11,5 @@ for profile in block goroutine heap mutex threadcreate; do
 done
 
 curl -sK -v ${API_ENDPOINT}/metrics > ${RESULTS}/metrics.json
+
+echo $RESULTS

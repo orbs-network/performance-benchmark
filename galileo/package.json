@@ -1,0 +1,11 @@
+{
+  "name": "galileo",
+  "version": "0.0.1",
+  "main": "index.js",
+  "author": "Kirill Maksimov <kirill@orbs.com>",
+  "license": "MIT",
+  "dependencies": {
+    "lodash": "^4.17.11",
+    "shelljs": "^0.8.3"
+  }
+}
