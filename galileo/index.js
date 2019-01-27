@@ -5,9 +5,9 @@ const { join } = require("path");
 const { RTMClient } = require('@slack/client');
 const { Promise } = require("bluebird");
 
-async function extract(input) {
+async function exec(command) {
     return new Promise((resolve, reject) => {
-        shell.exec(`API_ENDPOINT=${input.endpoint} COMMIT=${input.commit} ./extract.sh`, (code, stdout, stderr) => {
+        shell.exec(command, (code, stdout, stderr) => {
             if (code != 0) {
                 return reject(stderr);
             }
@@ -15,6 +15,14 @@ async function extract(input) {
             resolve({path: stdout.trim()});
         });
     });
+}
+
+async function extract(input) {
+    return exec(`API_ENDPOINT=${input.endpoint} COMMIT=${input.commit} ./extract.sh`);
+}
+
+async function uploadResults(input) {
+    return exec(`aws s3 sync --region us-west-2 ${input.path} ${input.resultsBucket}/${input.path}`)
 }
 
 function getMetrics(path) {
@@ -36,6 +44,7 @@ function getSlackClient(token) {
 (async () => {
     const token = process.env.SLACK_TOKEN;
     const endpoint = process.env.API_ENDPOINT || "http://localhost:8080";
+    const resultsBucket = "s3://orbs-performance-benchmark";
     const slack = getSlackClient(token);
 
     slack.on("message", async (message) => {
@@ -61,7 +70,9 @@ function getSlackClient(token) {
                 slack.sendMessage(`extracted data for ${commit}@${vcid}`, message.channel);
                 slack.sendMessage(`metrics for ${commit}@${vcid}:\n${JSON.stringify(metrics)}`, message.channel);
 
-                slack.sendMessage(`<@${message.user}>, you can download the results here: \`aws s3 sync --region us-west-2 s3://orbs-performance-benchmark/results/${path}\``, message.channel);
+                await uploadResults({path, resultsBucket});
+
+                slack.sendMessage(`<@${message.user}>, you can download the results here: \`aws s3 sync --region us-west-2 ${resultsBucket}/${path} ${path}\``, message.channel);
             } catch(e) {
                 slack.sendMessage(`<@${message.user}> failed to deploy ${commit}@${vcid}: ${e}`, message.channel);
             }
