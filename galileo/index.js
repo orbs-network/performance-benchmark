@@ -4,6 +4,7 @@ const { readFileSync } = require("fs");
 const { join } = require("path");
 const { RTMClient } = require('@slack/client');
 const { Promise } = require("bluebird");
+const { deploy } = require("nebula/deploy");
 
 async function exec(command) {
     return new Promise((resolve, reject) => {
@@ -30,8 +31,19 @@ function getMetrics(path) {
     return _.pick(metrics, "PublicApi.GetTransactionStatusProcessingTime", "PublicApi.RunQueryProcessingTime");
 }
 
-async function deploy(commit, vcid, apiEndpoint) {
+async function deployCommit(commit, vcid, {pathToConfig, regions, awsProfile}) {
     console.log(`Deploying ${commit} to ${vcid}`);
+    const exitCode = await deploy({
+        updateVchains: true,
+        chainVersion: commit,
+        pathToConfig,
+        regions,
+        awsProfile
+    });
+
+    if (exitCode != 0) {
+        throw `exit code: ${exitCode}`;
+    }
 }
 
 function getSlackClient(token) {
@@ -52,6 +64,11 @@ function getEndpoint(endpoint, vcid, isGamma) {
     const token = process.env.SLACK_TOKEN;
     const endpoint = process.env.API_ENDPOINT || "http://localhost:8080";
     const isGamma = process.env.GAMMA == "true";
+
+    const tesnetConfig = process.env.TESTNET_CONFIG;
+    const awsProfile = process.env.AWS_PROFILE;
+    const regions = (process.env.REGIONS || "").split(",");
+
     const resultsBucket = "s3://orbs-performance-benchmark";
     const slack = getSlackClient(token);
 
@@ -66,7 +83,11 @@ function getEndpoint(endpoint, vcid, isGamma) {
             slack.sendMessage(`deploying <https://github.com/orbs-network/orbs-network-go/commit/${commit}|${commit}>@${vcid}, it could take some time`, message.channel);
 
             try {
-                await deploy(commit, vcid, endpoint);
+                await deployCommit(commit, vcid, {
+                    pathToConfig: tesnetConfig,
+                    regions,
+                    awsProfile
+                });
                 slack.sendMessage(`successful deploy for ${commit}@${vcid}`, message.channel);
 
                 const { path } = await extract({commit, endpoint: getEndpoint(endpoint, vcid, isGamma)});
