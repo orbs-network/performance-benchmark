@@ -40,10 +40,18 @@ function getSlackClient(token) {
     return client;
 }
 
+function getEndpoint(endpoint, vcid, isGamma) {
+    if (isGamma) {
+        return endpoint;
+    }
+
+    return join(endpoint, "vchains", vcid);
+}
 
 (async () => {
     const token = process.env.SLACK_TOKEN;
     const endpoint = process.env.API_ENDPOINT || "http://localhost:8080";
+    const isGamma = process.env.GAMMA == "true";
     const resultsBucket = "s3://orbs-performance-benchmark";
     const slack = getSlackClient(token);
 
@@ -61,7 +69,7 @@ function getSlackClient(token) {
                 await deploy(commit, vcid, endpoint);
                 slack.sendMessage(`successful deploy for ${commit}@${vcid}`, message.channel);
 
-                const { path } = await extract({commit, endpoint});
+                const { path } = await extract({commit, endpoint: getEndpoint(endpoint, vcid, isGamma)});
                 const metrics = getMetrics(path);
 
                 console.log(`Extracted data to ${path}`);
