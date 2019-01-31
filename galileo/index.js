@@ -38,7 +38,8 @@ async function deployCommit(commit, vcid, {pathToConfig, regions, awsProfile}) {
         chainVersion: commit,
         pathToConfig,
         regions,
-        awsProfile
+        awsProfile,
+        vchains: [vcid]
     });
 
     if (exitCode != 0) {
@@ -57,7 +58,7 @@ function getEndpoint(endpoint, vcid, isGamma) {
         return endpoint;
     }
 
-    return join(endpoint, "vchains", vcid);
+    return [endpoint, "vchains", vcid].join("/");
 }
 
 (async () => {
@@ -79,7 +80,9 @@ function getEndpoint(endpoint, vcid, isGamma) {
 
         const match = message.text.match(/^deploy (\w+) to (\d+)/);
         if (match) {
-            const [text, commit, vcid] = match;
+            const [text, commit, vcidStr] = match;
+            const vcid = _.parseInt(vcidStr);
+
             slack.sendMessage(`deploying <https://github.com/orbs-network/orbs-network-go/commit/${commit}|${commit}>@${vcid}, it could take some time`, message.channel);
 
             try {
