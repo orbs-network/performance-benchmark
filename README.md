@@ -58,6 +58,7 @@ How to combine the multiple KPIs? Limit (2) and (3) to reasonable values (eg. 95
     
 2. Simulate client traffic
 
+    * Using one of the official client SDKs
     * Generate a significant number of `BenchmarkToken.transfer` transactions
     * All transactions are sent by the contract deployer (owner of all supply) where 1 token is transferred to a random address (from a pool of 100K addresses)
     * Transactions are sent evenly to all gateways (all nodes)
