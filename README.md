@@ -43,3 +43,41 @@ How to combine the multiple KPIs? Limit (2) and (3) to reasonable values (eg. 95
 6. Accept proposed change if KPI improved
 
 7. Rinse and repeat
+
+&nbsp;
+
+## Scenario 1
+
+1. Setup a new virtual chain
+
+    * No history (eg. no block persistence)
+    * No impact from other virtual chains (eg. prefer not to share a dispatcher)
+    * Number of nodes identical to the production scenario
+    * Nodes reside in 4-6 popular AWS regions (EU, US, around 100 ms ping between them)
+    * AWS machine type is pre determined
+    
+2. Simulate client traffic
+
+    * Generate a significant number of `BenchmarkToken.transfer` transactions
+    * All transactions are sent by the contract deployer (owner of all supply) where 1 token is transferred to a random address (from a pool of 100K addresses)
+    * Transactions are sent evenly to all gateways (all nodes)
+    * Transactions should be sent from multiple machines if the processing rate is faster than the send rate
+    
+3. Measure main KPIs periodically during the scenario
+
+    * TPS
+        * Rely on the metrics system TPS measure
+        * Double check with the metrics system measures of total committed transactions (over time)
+    * Confirmation time
+        * Rely on the metrics system confirmation time measure
+        * Double check with client view of this time
+    * Cost
+        * Predetermined
+        
+4. Extract profiling information periodically during the scenario
+
+    * Separately from each node (it's enough to sample the nodes)
+    * All basic profiling types of Golang (cpu, heap, goroutines, locks, etc.)
+    * Core bottleneck metrics from the machines (cpu usage, network usage, etc.)
+    
+5. Stop the scenario once we have enough stable measurements
