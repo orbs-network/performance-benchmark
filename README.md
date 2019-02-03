@@ -55,6 +55,7 @@ How to combine the multiple KPIs? Limit (2) and (3) to reasonable values (eg. 95
     * Number of nodes identical to the production scenario
     * Nodes reside in 4-6 popular AWS regions (EU, US, around 100 ms ping between them)
     * AWS machine type is pre determined
+    * Code base for production (eg. without Info logs)
     
 2. Simulate client traffic
 
