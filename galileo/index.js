@@ -1,6 +1,6 @@
 const _ = require("lodash");
 const shell = require("shelljs");
-const { readFileSync } = require("fs");
+const { readFileSync, writeFileSync } = require("fs");
 const { join } = require("path");
 const { RTMClient } = require('@slack/client');
 const { Promise } = require("bluebird");
@@ -31,15 +31,16 @@ function getMetrics(path) {
     return _.pick(metrics, "PublicApi.GetTransactionStatusProcessingTime", "PublicApi.RunQueryProcessingTime");
 }
 
-async function deployCommit(commit, vcid, {pathToConfig, regions, awsProfile}) {
+async function deployCommit(commit, vcid, {pathToConfig, contextPrefix, regions, awsProfile, vchains}) {
     console.log(`Deploying ${commit} to ${vcid}`);
+
     const exitCode = await deploy({
         updateVchains: true,
-        chainVersion: commit,
         pathToConfig,
+        contextPrefix,
         regions,
         awsProfile,
-        vchains: [vcid]
+        vchains
     });
 
     if (exitCode != 0) {
@@ -61,6 +62,19 @@ function getEndpoint(endpoint, vcid, isGamma) {
     return [endpoint, "vchains", vcid].join("/");
 }
 
+function loadVchainsCache() {
+    try {
+        return JSON.parse(readFileSync(`${__dirname}/data/vchains.json`).toString());
+    } catch (e) {
+        console.log(`Could not laod vchains: ${e}`);
+    }
+    return {};
+}
+
+function saveVchainsCache(cache) {
+    writeFileSync(`${__dirname}/data/vchains.json`, JSON.stringify(cache, 2, 2));
+}
+
 (async () => {
     const token = process.env.SLACK_TOKEN;
     const endpoint = process.env.API_ENDPOINT || "http://localhost:8080";
@@ -69,9 +83,13 @@ function getEndpoint(endpoint, vcid, isGamma) {
     const tesnetConfig = process.env.TESTNET_CONFIG;
     const awsProfile = process.env.AWS_PROFILE;
     const regions = (process.env.REGIONS || "").split(",");
+    const contextPrefix = _.isUndefined(process.env.CONTEXT_PREFIX) ? undefined : process.env.CONTEXT_PREFIX;
 
     const resultsBucket = "s3://orbs-performance-benchmark";
     const slack = getSlackClient(token);
+
+    const vchainsCache = loadVchainsCache();
+    console.log(vchainsCache);
 
     slack.on("message", async (message) => {
         if ( (message.subtype && message.subtype === 'bot_message') || (!message.subtype && message.user === slack.activeUserId) ) {
@@ -89,8 +107,15 @@ function getEndpoint(endpoint, vcid, isGamma) {
                 await deployCommit(commit, vcid, {
                     pathToConfig: tesnetConfig,
                     regions,
-                    awsProfile
+                    awsProfile,
+                    contextPrefix,
+                    vchains: _.merge({}, vchainsCache, {[vcid]: commit})
                 });
+
+                // separate update after successful deployment
+                vchainsCache[vcid] = commit;
+                saveVchainsCache(vchainsCache);
+
                 slack.sendMessage(`successful deploy for ${commit}@${vcid}`, message.channel);
 
                 const { path } = await extract({commit, endpoint: getEndpoint(endpoint, vcid, isGamma)});
@@ -106,6 +131,7 @@ function getEndpoint(endpoint, vcid, isGamma) {
 
                 slack.sendMessage(`<@${message.user}>, you can download the results here: \`aws s3 sync --region us-west-2 ${resultsBucket}/${path} ${path}\``, message.channel);
             } catch(e) {
+                console.log(e);
                 slack.sendMessage(`<@${message.user}> failed to deploy ${commit}@${vcid}: ${e}`, message.channel);
             }
         }
