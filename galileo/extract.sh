@@ -4,6 +4,8 @@ export API_ENDPOINT=${API_ENDPOINT-http://localhost:8080}
 export COMMIT=${COMMIT-master}
 export RESULTS=results/${COMMIT}/$(date +%Y-%m-%d-%H%M%S)
 
+go test ./../benchmark/...
+
 mkdir -p $RESULTS
 
 for profile in block goroutine heap mutex threadcreate; do
