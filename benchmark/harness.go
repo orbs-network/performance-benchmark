@@ -18,6 +18,7 @@ import (
 )
 
 type E2EConfig struct {
+	vchainId uint32
 	baseUrl          string
 	ethereumEndpoint string
 
@@ -30,7 +31,7 @@ type StressTestConfig struct {
 	targetTPS             float64
 }
 
-const VITRUAL_CHAIN_ID = 42
+const VIRTUAL_CHAIN_ID = uint32(42)
 // "github.com/orbs-network/orbs-spec/types/go/protocol"
 const PROCESSOR_TYPE_NATIVE = 1
 
@@ -38,9 +39,9 @@ type harness struct {
 	client *orbsClient.OrbsClient
 }
 
-func newHarness() *harness {
+func newHarness(vchainId uint32) *harness {
 	return &harness{
-		client: orbsClient.NewClient(getConfig().baseUrl, VITRUAL_CHAIN_ID, codec.NETWORK_TYPE_TEST_NET),
+		client: orbsClient.NewClient(getConfig().baseUrl, vchainId, codec.NETWORK_TYPE_TEST_NET),
 	}
 }
 
@@ -141,6 +142,7 @@ func printTestTime(t *testing.T, msg string, last *time.Time) {
 }
 
 func getConfig() E2EConfig {
+	vchainId := VIRTUAL_CHAIN_ID
 	baseUrl := "http://localhost:8080"
 
 	stressTestNumberOfTransactions := int64(1000)
@@ -153,6 +155,10 @@ func getConfig() E2EConfig {
 		apiEndpoint := os.Getenv("API_ENDPOINT")
 		baseUrl = strings.TrimRight(strings.TrimRight(apiEndpoint, "/"), "/api/v1")
 		ethereumEndpoint = os.Getenv("ETHEREUM_ENDPOINT")
+	}
+
+	if vcid, err := strconv.ParseUint(os.Getenv("VCHAIN"), 10, 0); err == nil {
+		vchainId = uint32(vcid)
 	}
 
 	if numTx, err := strconv.ParseInt(os.Getenv("STRESS_TEST_NUMBER_OF_TRANSACTIONS"), 10, 0); err == nil {
@@ -168,6 +174,7 @@ func getConfig() E2EConfig {
 	}
 
 	return E2EConfig{
+		vchainId,
 		baseUrl,
 		ethereumEndpoint,
 

@@ -34,10 +34,9 @@ func groupErrors(errors []error) map[string]int {
 }
 
 func TestE2EStress(t *testing.T) {
-	h := newHarness()
-	ctrlRand := rand.New(rand.NewSource(0))
-
 	config := getConfig()
+	h := newHarness(config.vchainId)
+	ctrlRand := rand.New(rand.NewSource(0))
 
 	baseTxCount := getTransactionCount(t, h)
 
