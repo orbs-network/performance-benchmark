@@ -1,0 +1,16 @@
+version: '2'
+
+services:
+  galileo:
+    image: orbs:performance-benchmark
+    environment:
+      REGIONS: eu-west-1,eu-west-2,eu-west-3,us-east-1,us-east-2,ca-central-1,eu-central-1
+      ENDPOINT: http://18.219.170.177
+      STRESS_TEST_NUMBER_OF_TRANSACTIONS: 500
+      SLACK_TOKEN: $SLACK_TOKEN
+      TESTNET_CONFIG: /mnt/testnet-configuration/benchmark
+      CONTEXT_PREFIX: benchmark
+    volumes:
+      - ./testnet-configuration:/mnt/testnet-configuration
+      - ./galileo/data:/go/src/github.com/orbs-network/performance-benchmark/galileo/data
+      - ./galileo/results:/go/src/github.com/orbs-network/performance-benchmark/galileo/results
