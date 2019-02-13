@@ -39,7 +39,7 @@ function formatGauge(metrics, name, conversionFunction) {
 }
 
 function toMb(num) {
-    return `${num / 8 / 1024} Mb`;
+    return `${num / 1024 / 1024} Mb`;
 }
 
 // FIXME better output
