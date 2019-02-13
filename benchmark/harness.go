@@ -18,7 +18,7 @@ import (
 )
 
 type E2EConfig struct {
-	vchainId uint32
+	vchainId         uint32
 	baseUrl          string
 	ethereumEndpoint string
 
@@ -26,12 +26,13 @@ type E2EConfig struct {
 }
 
 type StressTestConfig struct {
-	numberOfTransactions  int64
-	acceptableFailureRate int64
+	numberOfTransactions  uint64
+	acceptableFailureRate uint64
 	targetTPS             float64
 }
 
 const VIRTUAL_CHAIN_ID = uint32(42)
+
 // "github.com/orbs-network/orbs-spec/types/go/protocol"
 const PROCESSOR_TYPE_NATIVE = 1
 
@@ -145,8 +146,8 @@ func getConfig() E2EConfig {
 	vchainId := VIRTUAL_CHAIN_ID
 	baseUrl := "http://localhost:8080"
 
-	stressTestNumberOfTransactions := int64(1000)
-	stressTestFailureRate := int64(20)
+	stressTestNumberOfTransactions := uint64(1000)
+	stressTestFailureRate := uint64(20)
 	stressTestTargetTPS := float64(20)
 
 	ethereumEndpoint := "http://127.0.0.1:8545"
@@ -161,11 +162,11 @@ func getConfig() E2EConfig {
 		vchainId = uint32(vcid)
 	}
 
-	if numTx, err := strconv.ParseInt(os.Getenv("STRESS_TEST_NUMBER_OF_TRANSACTIONS"), 10, 0); err == nil {
+	if numTx, err := strconv.ParseUint(os.Getenv("STRESS_TEST_NUMBER_OF_TRANSACTIONS"), 10, 0); err == nil {
 		stressTestNumberOfTransactions = numTx
 	}
 
-	if failRate, err := strconv.ParseInt(os.Getenv("STRESS_TEST_FAILURE_RATE"), 10, 0); err == nil {
+	if failRate, err := strconv.ParseUint(os.Getenv("STRESS_TEST_FAILURE_RATE"), 10, 0); err == nil {
 		stressTestFailureRate = failRate
 	}
 

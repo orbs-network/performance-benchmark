@@ -33,41 +33,45 @@ func groupErrors(errors []error) map[string]int {
 	return groupedErrors
 }
 
-func TestE2EStress(t *testing.T) {
-	config := getConfig()
-	h := newHarness(config.vchainId)
+func testLoop(h *harness, txCount uint64, txRate *rate.Limiter) []error {
 	ctrlRand := rand.New(rand.NewSource(0))
-
-	baseTxCount := getTransactionCount(t, h)
-
-	var wg sync.WaitGroup
-
-	limiter := rate.NewLimiter(1000, 50)
-
 	var errors []error
-
-	for i := int64(0); i < config.numberOfTransactions; i++ {
-		if err := limiter.Wait(context.Background()); err == nil {
+	var wg sync.WaitGroup
+	for i := uint64(0); i < txCount; i++ {
+		if err := txRate.Wait(context.Background()); err == nil {
 			wg.Add(1)
-
-			go func() {
+			go func(idx uint64) {
 				defer wg.Done()
-
+				defer func() {
+					if idx%10 == 0 {
+						fmt.Printf("%s\n", h.getMetrics()["BlockStorage.BlockHeight"])
+					}
+				}()
 				target, _ := orbsClient.CreateAccount()
 				amount := uint64(ctrlRand.Intn(10))
-
 				_, _, err2 := h.sendTransaction(OwnerOfAllSupply.PublicKey(), OwnerOfAllSupply.PrivateKey(), "BenchmarkToken", "transfer", uint64(amount), target.AddressAsBytes())
-
 				if err2 != nil {
 					errors = append(errors, err2)
 				}
-			}()
+			}(i)
 		} else {
 			errors = append(errors, err)
 		}
 	}
-
 	wg.Wait()
+	return errors
+}
+
+func TestE2EStress(t *testing.T) {
+	config := getConfig()
+	h := newHarness(config.vchainId)
+
+	baseTxCount := getTransactionCount(t, h)
+
+	fmt.Printf("===== Test start ===== txCount=%d", config.numberOfTransactions)
+	//fastRate := rate.NewLimiter(1000, 50)
+	onePerSec := rate.NewLimiter(1, 1)
+	errors := testLoop(h, config.numberOfTransactions, onePerSec)
 
 	txCount := getTransactionCount(t, h) - baseTxCount
 

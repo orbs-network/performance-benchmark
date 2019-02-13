@@ -8,7 +8,7 @@
 
 ### Principles
 
-1. Reproducable - the suite should be easily runnable by anyone and automatic as possible
+1. Reproducible - the suite should be easily runnable by anyone and automatic as possible
 
 2. Production oriented - use case under test should resemble a real production environment
 
@@ -46,7 +46,9 @@ How to combine the multiple KPIs? Limit (2) and (3) to reasonable values (eg. 95
 
 &nbsp;
 
-## Scenario 1
+## Scenarios
+
+### Basic
 
 1. Setup a new virtual chain
 
@@ -54,7 +56,7 @@ How to combine the multiple KPIs? Limit (2) and (3) to reasonable values (eg. 95
     * No impact from other virtual chains (eg. prefer not to share a dispatcher)
     * Number of nodes identical to the production scenario
     * Nodes reside in 4-6 popular AWS regions (EU, US, around 100 ms ping between them)
-    * AWS machine type is pre determined
+    * AWS machine type is predetermined
     * Code base for production (eg. without Info logs)
     
 2. Simulate client traffic
@@ -83,3 +85,23 @@ How to combine the multiple KPIs? Limit (2) and (3) to reasonable values (eg. 95
     * Core bottleneck metrics from the machines (cpu usage, network usage, etc.)
     
 5. Stop the scenario once we have enough stable measurements
+
+
+## TBD Technical
+
+### Updating with new build
+
+* Slackbot: ... not yet
+ 
+go to performance_benchmark project
+cd galileo
+export API_ENDPOINT=http://18.219.170.177/vchains/2000/api/v1/ BASE_URL=http://18.219.170.177/vchains/2000
+export STRESS_TEST_NUMBER_OF_TRANSACTIONS=100 VCHAIN=2000
+./extract.sh
+
+
+### Extracting measurements from live network
+
+* Goroutine stack traces
+* Performance metrics
+
