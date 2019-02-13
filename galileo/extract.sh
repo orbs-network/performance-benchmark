@@ -5,7 +5,7 @@ export BASE_URL=${BASE_URL-http://localhost:8080}
 export COMMIT=${COMMIT-master}
 export RESULTS=${RESULTS-results/${COMMIT}/$(date +%Y-%m-%d-%H%M%S)}
 
-go test ./../benchmark/...
+go test ./../benchmark/... -count 1
 
 mkdir -p $RESULTS
 

@@ -8,7 +8,8 @@
     "@slack/client": "^4.8.0",
     "bluebird": "^3.5.3",
     "lodash": "^4.17.11",
-    "shelljs": "^0.8.3",
-    "nebula": "../../nebula"
+    "moment": "^2.24.0",
+    "nebula": "git://github.com/orbs-network/nebula.git#b75b6001e7b81bc49538d6333dd8791f3d1adc94",
+    "shelljs": "^0.8.3"
   }
 }
