@@ -12,6 +12,12 @@ import (
 	"time"
 )
 
+type testConfig struct {
+	txCount         uint64
+	txPerSec        float64
+	metricsEveryNth uint64
+}
+
 func getTransactionCount(t *testing.T, h *harness) float64 {
 	var m metrics
 
@@ -33,18 +39,19 @@ func groupErrors(errors []error) map[string]int {
 	return groupedErrors
 }
 
-func testLoop(h *harness, txCount uint64, txRate *rate.Limiter) []error {
+func runTest(h *harness, config *E2EConfig) []error {
 	ctrlRand := rand.New(rand.NewSource(0))
 	var errors []error
 	var wg sync.WaitGroup
-	for i := uint64(0); i < txCount; i++ {
-		if err := txRate.Wait(context.Background()); err == nil {
+	limiter := rate.NewLimiter(rate.Limit(config.txPerMin/60.0), 1)
+	for i := uint64(0); i < config.numberOfTransactions; i++ {
+		if err := limiter.Wait(context.Background()); err == nil {
 			wg.Add(1)
 			go func(idx uint64) {
 				defer wg.Done()
 				defer func() {
-					if idx%10 == 0 {
-						fmt.Printf("%s\n", h.getMetrics()["BlockStorage.BlockHeight"])
+					if idx%config.metricsEveryNth == 0 {
+						fmt.Printf("%v\n", h.getMetrics()["BlockStorage.BlockHeight"])
 					}
 				}()
 				target, _ := orbsClient.CreateAccount()
@@ -62,7 +69,7 @@ func testLoop(h *harness, txCount uint64, txRate *rate.Limiter) []error {
 	return errors
 }
 
-func TestE2EStress(t *testing.T) {
+func TestStability(t *testing.T) {
 	config := getConfig()
 	h := newHarness(config.vchainId)
 
@@ -70,13 +77,10 @@ func TestE2EStress(t *testing.T) {
 
 	fmt.Printf("===== Test start ===== txCount=%d", config.numberOfTransactions)
 	//fastRate := rate.NewLimiter(1000, 50)
-	onePerSec := rate.NewLimiter(1, 1)
-	errors := testLoop(h, config.numberOfTransactions, onePerSec)
 
+	errors := runTest(h, config)
 	txCount := getTransactionCount(t, h) - baseTxCount
-
 	expectedNumberOfTx := float64(100-config.acceptableFailureRate) / 100 * float64(config.numberOfTransactions)
-
 	fmt.Printf("Successfully processed %.0f%% of %d transactions\n", txCount/float64(config.numberOfTransactions)*100, config.numberOfTransactions)
 
 	if len(errors) != 0 {
