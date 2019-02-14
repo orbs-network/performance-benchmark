@@ -29,6 +29,8 @@ type StressTestConfig struct {
 	numberOfTransactions  uint64
 	acceptableFailureRate uint64
 	targetTPS             float64
+	txPerMin              float64
+	metricsEveryNth       uint64
 }
 
 const VIRTUAL_CHAIN_ID = uint32(42)
@@ -142,13 +144,15 @@ func printTestTime(t *testing.T, msg string, last *time.Time) {
 	*last = time.Now()
 }
 
-func getConfig() E2EConfig {
+func getConfig() *E2EConfig {
 	vchainId := VIRTUAL_CHAIN_ID
 	baseUrl := "http://localhost:8080"
 
 	stressTestNumberOfTransactions := uint64(1000)
+	stressTestTransactionsPerMinute := float64(60)
 	stressTestFailureRate := uint64(20)
 	stressTestTargetTPS := float64(20)
+	stressTestMetricsEveryNthTransaction := uint64(10)
 
 	ethereumEndpoint := "http://127.0.0.1:8545"
 
@@ -166,6 +170,13 @@ func getConfig() E2EConfig {
 		stressTestNumberOfTransactions = numTx
 	}
 
+	if txPerMin, err := strconv.ParseUint(os.Getenv("STRESS_TEST_TRANSACTIONS_PER_MINUTE"), 10, 0); err == nil {
+		stressTestTransactionsPerMinute = float64(txPerMin)
+	}
+
+	if metricsEveryNth, err := strconv.ParseUint(os.Getenv("STRESS_TEST_METRICS_EVERY_NTH_TRANSACTION"), 10, 0); err == nil {
+		stressTestMetricsEveryNthTransaction = uint64(metricsEveryNth)
+	}
 	if failRate, err := strconv.ParseUint(os.Getenv("STRESS_TEST_FAILURE_RATE"), 10, 0); err == nil {
 		stressTestFailureRate = failRate
 	}
@@ -174,15 +185,17 @@ func getConfig() E2EConfig {
 		stressTestTargetTPS = tps
 	}
 
-	return E2EConfig{
+	return &E2EConfig{
 		vchainId,
 		baseUrl,
 		ethereumEndpoint,
 
 		StressTestConfig{
-			stressTestNumberOfTransactions,
-			stressTestFailureRate,
-			stressTestTargetTPS,
+			numberOfTransactions:  stressTestNumberOfTransactions,
+			acceptableFailureRate: stressTestFailureRate,
+			targetTPS:             stressTestTargetTPS,
+			txPerMin:              stressTestTransactionsPerMinute,
+			metricsEveryNth:       stressTestMetricsEveryNthTransaction,
 		},
 	}
 }
