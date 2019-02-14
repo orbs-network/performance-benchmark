@@ -149,7 +149,7 @@ func getConfig() *E2EConfig {
 	baseUrl := "http://localhost:8080"
 
 	stressTestNumberOfTransactions := uint64(1000)
-	stressTestTransactionsPerMinute := float64(60)
+	stressTestTransactionsPerMinute := float64(240)
 	stressTestFailureRate := uint64(20)
 	stressTestTargetTPS := float64(20)
 	stressTestMetricsEveryNthTransaction := uint64(10)

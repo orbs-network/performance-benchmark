@@ -51,7 +51,7 @@ func runTest(h *harness, config *E2EConfig) []error {
 				defer wg.Done()
 				defer func() {
 					if idx%config.metricsEveryNth == 0 {
-						fmt.Printf("%v\n", h.getMetrics()["BlockStorage.BlockHeight"])
+						printMetrics(h.getMetrics())
 					}
 				}()
 				target, _ := orbsClient.CreateAccount()
@@ -69,13 +69,21 @@ func runTest(h *harness, config *E2EConfig) []error {
 	return errors
 }
 
+func printMetrics(m metrics) (int, error) {
+	//return fmt.Printf("H=%v V=%v\n",
+	//	m["BlockStorage.BlockHeight"]["Value"],
+	//	m["ConsensusAlgo.LeanHelix.CurrentElectionCount"]["Value"])
+	return fmt.Printf("%v\n",
+		m)
+}
+
 func TestStability(t *testing.T) {
 	config := getConfig()
 	h := newHarness(config.vchainId)
 
 	baseTxCount := getTransactionCount(t, h)
 
-	fmt.Printf("===== Test start ===== txCount=%d", config.numberOfTransactions)
+	fmt.Printf("===== Test start ===== txCount=%d txPerMin=%f\n", config.numberOfTransactions, config.txPerMin)
 	//fastRate := rate.NewLimiter(1000, 50)
 
 	errors := runTest(h, config)
