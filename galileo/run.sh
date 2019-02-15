@@ -6,7 +6,8 @@ export COMMIT=${COMMIT-master}
 DATE=$(date +%Y-%m-%d-%H%M%S)
 export RESULTS=${RESULTS-results}/$COMMIT/$DATE}
 
-export STRESS_TEST_NUMBER_OF_TRANSACTIONS=120
+export STRESS_TEST_TRANSACTIONS_PER_MINUTE=10
+export STRESS_TEST_NUMBER_OF_TRANSACTIONS=120000
 export VCHAIN=2000
 export LOG_FILE="stability-${DATE}.log"
 
@@ -24,4 +25,8 @@ echo
 echo "To follow progress, run: tail -f ${LOG_FILE}"
 echo
 
-go test ./../benchmark/... -count 1 -v > ${LOG_FILE} &
+go test ./../benchmark/... -timeout 100000m -count 1 -v > ${LOG_FILE} & CMDPID=$!
+echo
+echo "Started process ID $CMDPID. To stop it, run:"
+echo "kill $CMDPID"
+echo

@@ -12,6 +12,8 @@ import (
 	"time"
 )
 
+const TIMESTAMP_FORMAT = "2006-01-02T15:04:05.999Z"
+
 type testConfig struct {
 	txCount         uint64
 	txPerSec        float64
@@ -50,9 +52,8 @@ func runTest(h *harness, config *E2EConfig) []error {
 			go func(idx uint64) {
 				defer wg.Done()
 				defer func() {
-					if idx%config.metricsEveryNth == 0 {
-						fmt.Printf("Sent %5d of %5d transactions. Rate=%.0f tx/min. MaxTxTime=%.0f ms.\n",
-							idx, config.numberOfTransactions, config.txPerMin, h.getMetrics()["PublicApi.SendTransactionProcessingTime"]["Max"])
+					if idx == 0 || idx%config.metricsEveryNth == 0 {
+						printStats(h.getMetrics(), idx, config)
 						printMetrics(h.getMetrics())
 					}
 				}()
@@ -69,6 +70,19 @@ func runTest(h *harness, config *E2EConfig) []error {
 	}
 	wg.Wait()
 	return errors
+}
+
+func printStats(m metrics, idx uint64, cfg *E2EConfig) {
+
+	fmt.Printf("=STATS= %s txTotal=%d RateTxMin=%.0f H=%.0f currentTxIdx=%d PApiMaxTxMs=%.0f SinceLastCommitMs=%.0fms\n",
+		time.Now().UTC().Format(TIMESTAMP_FORMAT),
+		cfg.numberOfTransactions,
+		cfg.txPerMin,
+		m["BlockStorage.BlockHeight"]["Value"],
+		idx,
+		m["PublicApi.SendTransactionProcessingTime"]["Max"],
+		m["ConsensusAlgo.LeanHelix.TimeSinceLastCommitMillis"]["Max"],
+	)
 }
 
 func printMetrics(m metrics) (int, error) {
