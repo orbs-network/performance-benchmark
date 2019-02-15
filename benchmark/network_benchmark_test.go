@@ -51,6 +51,8 @@ func runTest(h *harness, config *E2EConfig) []error {
 				defer wg.Done()
 				defer func() {
 					if idx%config.metricsEveryNth == 0 {
+						fmt.Printf("Sent %5d of %5d transactions. Rate=%.0f tx/min. MaxTxTime=%.0f ms.\n",
+							idx, config.numberOfTransactions, config.txPerMin, h.getMetrics()["PublicApi.SendTransactionProcessingTime"]["Max"])
 						printMetrics(h.getMetrics())
 					}
 				}()
@@ -83,7 +85,7 @@ func TestStability(t *testing.T) {
 
 	baseTxCount := getTransactionCount(t, h)
 
-	fmt.Printf("===== Test start ===== txCount=%d txPerMin=%f\n", config.numberOfTransactions, config.txPerMin)
+	fmt.Printf("===== Test start ===== txCount=%d txPerMin=%.0f\n", config.numberOfTransactions, config.txPerMin)
 	//fastRate := rate.NewLimiter(1000, 50)
 
 	errors := runTest(h, config)

@@ -95,8 +95,10 @@ How to combine the multiple KPIs? Limit (2) and (3) to reasonable values (eg. 95
  
 go to performance_benchmark project
 cd galileo
-export API_ENDPOINT=http://18.219.170.177/vchains/2000/api/v1/ BASE_URL=http://18.219.170.177/vchains/2000
-export STRESS_TEST_NUMBER_OF_TRANSACTIONS=100 VCHAIN=2000
+export API_ENDPOINT=http://18.219.170.177/vchains/2000/api/v1/
+export BASE_URL=http://18.219.170.177/vchains/2000
+export STRESS_TEST_NUMBER_OF_TRANSACTIONS=100 
+export VCHAIN=2000
 ./extract.sh
 
 
