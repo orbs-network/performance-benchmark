@@ -4,7 +4,7 @@ const { readFileSync, writeFileSync } = require("fs");
 const { join } = require("path");
 const { RTMClient } = require("@slack/client");
 const { Promise } = require("bluebird");
-const { getEndpoint, waitUntilCommit, waitUntilSync, getBlockHeight } = require("nebula/lib/metrics");
+const { getEndpoint, waitUntilCommit, waitUntilSync, getBlockHeight, getMetrics } = require("nebula/lib/metrics");
 const { update, status, getNodes } = require("nebula/lib/cli");
 const moment = require("moment");
 
@@ -44,9 +44,7 @@ function toMb(num) {
     return `${num / 1024 / 1024} Mb`;
 }
 
-// FIXME better output
-function getMetrics(path) {
-    const metrics = JSON.parse(readFileSync(join(path, "metrics.json")).toString());
+function formatMetrics(metrics) {
     return [
         formatGauge(metrics, "BlockStorage.BlockHeight"),
         formatHistogram(metrics, "PublicApi.SendTransactionProcessingTime"),
@@ -214,6 +212,27 @@ function saveVchainsCache(cache) {
             } catch(e) {
                 console.log(e);
                 slack.sendMessage(`<@${message.user}> failed to retrieve network status of ${vcid}: ${e}`, message.channel);
+            }
+        }
+
+        const matchMetrics = message.text.match(/^metrics (\d+)/);
+        if (matchMetrics) {
+            const [text, vcidStr] = matchMetrics;
+            const vcid = _.parseInt(vcidStr);
+
+            try {
+                const nodes = getNodes({ configPath: testnetConfig });
+                const node = _.first(nodes);
+
+                slack.sendMessage(`retrieving metrics for vchain ${vcid} at ${endpoint}, this may take some time`, message.channel);
+
+                const metrics = await getMetrics(getEndpoint(node, vcid));
+                console.log(`Metrics`, metrics);
+
+                slack.sendMessage(formatMetrics(metrics), message.channel);
+            } catch(e) {
+                console.log(e);
+                slack.sendMessage(`<@${message.user}> failed to retrieve metrics for ${vcid}: ${e}`, message.channel);
             }
         }
     });
