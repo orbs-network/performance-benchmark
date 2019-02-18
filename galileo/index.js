@@ -4,7 +4,7 @@ const { readFileSync, writeFileSync } = require("fs");
 const { join } = require("path");
 const { RTMClient } = require("@slack/client");
 const { Promise } = require("bluebird");
-const { getEndpoint, waitUntilCommit, waitUntilSync } = require("nebula/lib/metrics");
+const { getEndpoint, waitUntilCommit, waitUntilSync, getBlockHeight } = require("nebula/lib/metrics");
 const { update, status, getNodes } = require("nebula/lib/cli");
 const moment = require("moment");
 
@@ -57,7 +57,17 @@ function getMetrics(path) {
 async function deployCommit(commit, vcid, {configPath, contextPrefix, regions, awsProfile, vchains}) {
     console.log(`Deploying ${commit} to ${vcid}`);
 
-    await Promise.map(regions, (region) => {
+    const nodes = await getNodes({ configPath });
+    const endpoints = _.mapValues(nodes, (ip) => {
+        return getEndpoint(ip, vcid);
+    });
+    const quorum = Math.round(2/3*_.size(nodes));
+
+    const blockHeights = await Promise.props(_.mapValues(_.clone(endpoints), (endpoint) => {
+        return getBlockHeight(endpoint);
+    }));
+
+    await Promise.some(_.map(regions, (region) => {
         return update({
             name: `${contextPrefix}-${region}`, // FIXME later
             region,
@@ -65,22 +75,15 @@ async function deployCommit(commit, vcid, {configPath, contextPrefix, regions, a
             chainVersion: vchains,
             awsProfile
         });
-    });
+    }), quorum);
 
-    const nodes = await getNodes({ configPath });
-
-    const ips = _.mapValues(nodes, (ip) => {
-        return getEndpoint(ip, vcid);
-    });
-
-    await Promise.map(_.values(ips), (endpoint) => {
+    await Promise.some(_.map(_.values(endpoints), (endpoint) => {
         return waitUntilCommit(endpoint, commit);
-    });
+    }), quorum);
 
-    // FIXME wait until sync
-    // await Promise.map(_.values(ips), (endpoint) => {
-    //     return waitUntilSync(endpoint, commit);
-    // }).some(Math.round(2/3*_.size(nodes)));
+    await Promise.some(_.map(endpoints, (endpoint, region) => {
+        return waitUntilSync(endpoint, blockHeights[region]);
+    }), quorum);
 
     return (await status({ configPath, vchain: vcid })).result;
 }
@@ -130,7 +133,7 @@ function saveVchainsCache(cache) {
     const endpoint = process.env.ENDPOINT || "http://localhost:8080";
     const isGamma = process.env.GAMMA == "true";
 
-    const tesnetConfig = process.env.TESTNET_CONFIG;
+    const testnetConfig = process.env.TESTNET_CONFIG;
     const awsProfile = process.env.AWS_PROFILE;
     const regions = (process.env.REGIONS || "").split(",");
     const contextPrefix = _.isUndefined(process.env.CONTEXT_PREFIX) ? undefined : process.env.CONTEXT_PREFIX;
@@ -146,16 +149,16 @@ function saveVchainsCache(cache) {
             return;
         }
 
-        const match = message.text.match(/^deploy (\w+) to (\d+)/);
-        if (match) {
-            const [text, commit, vcidStr] = match;
+        const matchDeploy = message.text.match(/^deploy (\w+) to (\d+)/);
+        if (matchDeploy) {
+            const [text, commit, vcidStr] = matchDeploy;
             const vcid = _.parseInt(vcidStr);
 
             slack.sendMessage(`deploying <https://github.com/orbs-network/orbs-network-go/commit/${commit}|${commit}>@${vcid}, it could take some time`, message.channel);
 
             try {
                 const networkStatus = await deployCommit(commit, vcid, {
-                    configPath: tesnetConfig,
+                    configPath: testnetConfig,
                     regions,
                     awsProfile,
                     contextPrefix,
@@ -169,31 +172,48 @@ function saveVchainsCache(cache) {
                 slack.sendMessage(formatNetworkStatus(networkStatus), message.channel);
                 slack.sendMessage(`successful deploy for ${commit}@${vcid}`, message.channel);
 
-                const path = join(`results`, commit, moment().format("Y-MM-DD-hhmmss"));
-                const baseUrl = getBaseUrl(endpoint, vcid, isGamma);
+                // FIXME run benchmark as a separate step
 
-                const extractionOptions = {
-                    commit,
-                    baseUrl,
-                    results: path,
-                    vchain: vcid
-                };
-
-                await extract(extractionOptions);
-                const metrics = getMetrics(path);
-
-                console.log(`Extracted data to ${path}`);
-                console.log(`Metrics`, metrics);
-
-                slack.sendMessage(`extracted data for ${commit}@${vcid}`, message.channel);
-                slack.sendMessage(`metrics for ${commit}@${vcid}:\n${metrics}`, message.channel);
-
-                await uploadResults({path, resultsBucket});
-
-                slack.sendMessage(`<@${message.user}>, you can download the results here: \`aws s3 sync --region us-west-2 ${resultsBucket}/${path} ${path}\``, message.channel);
+                // const path = join(`results`, commit, moment().format("Y-MM-DD-hhmmss"));
+                // const baseUrl = getBaseUrl(endpoint, vcid, isGamma);
+                //
+                // const extractionOptions = {
+                //     commit,
+                //     baseUrl,
+                //     results: path,
+                //     vchain: vcid
+                // };
+                //
+                // await extract(extractionOptions);
+                // const metrics = getMetrics(path);
+                //
+                // console.log(`Extracted data to ${path}`);
+                // console.log(`Metrics`, metrics);
+                //
+                // slack.sendMessage(`extracted data for ${commit}@${vcid}`, message.channel);
+                // slack.sendMessage(`metrics for ${commit}@${vcid}:\n${metrics}`, message.channel);
+                //
+                // await uploadResults({path, resultsBucket});
+                //
+                // slack.sendMessage(`<@${message.user}>, you can download the results here: \`aws s3 sync --region us-west-2 ${resultsBucket}/${path} ${path}\``, message.channel);
             } catch(e) {
                 console.log(e);
                 slack.sendMessage(`<@${message.user}> failed to deploy ${commit}@${vcid}: ${e}`, message.channel);
+            }
+        }
+
+        const matchStatus = message.text.match(/^status (\d+)/);
+        if (matchStatus) {
+            const [text, vcidStr] = matchStatus;
+            const vcid = _.parseInt(vcidStr);
+
+            try {
+                slack.sendMessage(`determining network status for vchain ${vcid}, this may take some time`, message.channel);
+                const networkStatus = (await status({ configPath: testnetConfig, vchain: vcid })).result;
+                slack.sendMessage(formatNetworkStatus(networkStatus), message.channel);
+            } catch(e) {
+                console.log(e);
+                slack.sendMessage(`<@${message.user}> failed to retrieve network status of ${vcid}: ${e}`, message.channel);
             }
         }
     });
