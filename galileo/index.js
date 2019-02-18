@@ -4,7 +4,8 @@ const { readFileSync, writeFileSync } = require("fs");
 const { join } = require("path");
 const { RTMClient } = require("@slack/client");
 const { Promise } = require("bluebird");
-const { deploy } = require("nebula/deploy");
+const { getEndpoint, waitUntilCommit, waitUntilSync } = require("nebula/lib/metrics");
+const { update, status, getNodes } = require("nebula/lib/cli");
 const moment = require("moment");
 
 async function exec(command) {
@@ -20,7 +21,8 @@ async function exec(command) {
 }
 
 async function extract(input) {
-    return exec(`API_ENDPOINT=${getApiEndpoint(input.baseUrl)} BASE_URL=${input.baseUrl} VCHAIN=${input.vchain} COMMIT=${input.commit} RESULTS=${input.results} ./extract.sh`);
+    // await exec(`API_ENDPOINT=${getApiEndpoint(input.baseUrl)} BASE_URL=${input.baseUrl} VCHAIN=${input.vchain} COMMIT=${input.commit} RESULTS=${input.results} ./run.sh`);
+    await exec(`API_ENDPOINT=${getApiEndpoint(input.baseUrl)} BASE_URL=${input.baseUrl} VCHAIN=${input.vchain} COMMIT=${input.commit} RESULTS=${input.results} ./extract_results.sh`);
 }
 
 async function uploadResults(input) {
@@ -52,21 +54,42 @@ function getMetrics(path) {
     ].join("\n");
 }
 
-async function deployCommit(commit, vcid, {pathToConfig, contextPrefix, regions, awsProfile, vchains}) {
+async function deployCommit(commit, vcid, {configPath, contextPrefix, regions, awsProfile, vchains}) {
     console.log(`Deploying ${commit} to ${vcid}`);
 
-    const exitCode = await deploy({
-        updateVchains: true,
-        pathToConfig,
-        contextPrefix,
-        regions,
-        awsProfile,
-        vchains
+    await Promise.map(regions, (region) => {
+        return update({
+            name: `${contextPrefix}-${region}`, // FIXME later
+            region,
+            configPath,
+            chainVersion: vchains,
+            awsProfile
+        });
     });
 
-    if (exitCode != 0) {
-        throw `exit code: ${exitCode}`;
-    }
+    const nodes = await getNodes({ configPath });
+
+    const ips = _.mapValues(nodes, (ip) => {
+        return getEndpoint(ip, vcid);
+    });
+
+    await Promise.map(_.values(ips), (endpoint) => {
+        return waitUntilCommit(endpoint, commit);
+    });
+
+    // FIXME wait until sync
+    // await Promise.map(_.values(ips), (endpoint) => {
+    //     return waitUntilSync(endpoint, commit);
+    // }).some(Math.round(2/3*_.size(nodes)));
+
+    return (await status({ configPath, vchain: vcid })).result;
+}
+
+function formatNetworkStatus(networkStatus) {
+    return _.map(networkStatus, (data, name) => {
+        return `${name} ${data.status} blockHeight=${data.blockHeight} version=${data.version}@${_.truncate(data.commit, {length: 8, omission: ''})}`;
+    }).join("\n");
+
 }
 
 function getSlackClient(token) {
@@ -89,7 +112,9 @@ function getApiEndpoint(baseUrl) {
 
 function loadVchainsCache() {
     try {
-        return JSON.parse(readFileSync(`${__dirname}/data/vchains.json`).toString());
+        return _.mapKeys(JSON.parse(readFileSync(`${__dirname}/data/vchains.json`).toString()), (key, value) => {
+            return _.parseInt(value);
+        });
     } catch (e) {
         console.log(`Could not laod vchains: ${e}`);
     }
@@ -129,8 +154,8 @@ function saveVchainsCache(cache) {
             slack.sendMessage(`deploying <https://github.com/orbs-network/orbs-network-go/commit/${commit}|${commit}>@${vcid}, it could take some time`, message.channel);
 
             try {
-                await deployCommit(commit, vcid, {
-                    pathToConfig: tesnetConfig,
+                const networkStatus = await deployCommit(commit, vcid, {
+                    configPath: tesnetConfig,
                     regions,
                     awsProfile,
                     contextPrefix,
@@ -141,6 +166,7 @@ function saveVchainsCache(cache) {
                 vchainsCache[vcid] = commit;
                 saveVchainsCache(vchainsCache);
 
+                slack.sendMessage(formatNetworkStatus(networkStatus), message.channel);
                 slack.sendMessage(`successful deploy for ${commit}@${vcid}`, message.channel);
 
                 const path = join(`results`, commit, moment().format("Y-MM-DD-hhmmss"));

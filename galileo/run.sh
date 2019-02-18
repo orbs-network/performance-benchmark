@@ -4,10 +4,10 @@ export API_ENDPOINT=${API_ENDPOINT-http://18.219.170.177/vchains/2000/api/v1/}
 export BASE_URL=${BASE_URL-http://18.219.170.177/vchains/2000}
 export COMMIT=${COMMIT-master}
 DATE=$(date +%Y-%m-%d-%H%M%S)
-export RESULTS=${RESULTS-results}/$COMMIT/$DATE}
+export RESULTS=${RESULTS-results/$COMMIT/$DATE}
 
 export STRESS_TEST_TRANSACTIONS_PER_MINUTE=10
-export STRESS_TEST_NUMBER_OF_TRANSACTIONS=120000
+export STRESS_TEST_NUMBER_OF_TRANSACTIONS= 120000
 export VCHAIN=2000
 export LOG_FILE="stability-${DATE}.log"
 
