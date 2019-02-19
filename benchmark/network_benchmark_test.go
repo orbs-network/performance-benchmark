@@ -76,10 +76,11 @@ func printStats(h *harness, idx uint64) {
 		m := h.getMetrics(h.metricsEndpoint(nodeIP))
 		printStatsFromMetrics(nodeIP, h.config, m, idx)
 	}
+	fmt.Println()
 }
 
 func printStatsFromMetrics(nodeIP string, cfg *E2EConfig, m metrics, idx uint64) (int, error) {
-	return fmt.Printf("=STATS= %s %s txTotal=%d RateTxMin=%.0f H=%.0f currentTxIdx=%d PApiMaxTxMs=%.0f SinceLastCommitMs=%.0f CommittedPoolTx=%.0f PendingPoolTx=%.0f TimeInPendingMax=%0.f TimeInPendingP99=%0.f StateKeys=%.0f HeapAllocMb=%.0f Goroutines=%.0f\n",
+	return fmt.Printf("=STATS= %s %s txTotal=%d RateTxMin=%.0f H=%.0f currentTxIdx=%d PApiTxMaxMs=%.0f PApiTxP99Ms=%.0f SinceLastCommitMs=%.0f CommittedPoolTx=%.0f PendingPoolTx=%.0f TimeInPendingMax=%0.f TimeInPendingP99=%0.f StateKeys=%.0f HeapAllocMb=%.0f Goroutines=%.0f\n",
 		time.Now().UTC().Format(TIMESTAMP_FORMAT),
 		nodeIP,
 		cfg.numberOfTransactions,
@@ -87,6 +88,7 @@ func printStatsFromMetrics(nodeIP string, cfg *E2EConfig, m metrics, idx uint64)
 		m["BlockStorage.BlockHeight"]["Value"],
 		idx,
 		m["PublicApi.SendTransactionProcessingTime"]["Max"],
+		m["PublicApi.SendTransactionProcessingTime"]["P99"],
 		m["ConsensusAlgo.LeanHelix.TimeSinceLastCommitMillis"]["Max"],
 		m["TransactionPool.CommittedPool.TransactionCount"]["Value"],
 		m["TransactionPool.PendingPool.TransactionCount"]["Value"],
