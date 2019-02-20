@@ -133,8 +133,8 @@ asynckit@^0.4.0:
   resolved "https://registry.yarnpkg.com/asynckit/-/asynckit-0.4.0.tgz#c79ed97f7f34cb8f2ba1bc9790bcc366474b4b79"
 
 aws-sdk@^2.401.0:
-  version "2.405.0"
-  resolved "https://registry.yarnpkg.com/aws-sdk/-/aws-sdk-2.405.0.tgz#77bd076ad05db2647caeb0645896257b8868ca6c"
+  version "2.406.0"
+  resolved "https://registry.yarnpkg.com/aws-sdk/-/aws-sdk-2.406.0.tgz#ee45dd8fa383053eec2143c9f3ec24be4ffbce5c"
   dependencies:
     buffer "4.9.1"
     events "1.1.1"
@@ -796,7 +796,7 @@ nconf@^0.10.0:
 
 "nebula@git://github.com/orbs-network/nebula.git#feature/network-status":
   version "0.1.0"
-  resolved "git://github.com/orbs-network/nebula.git#2fe99530e21cfc56a086f8b08dc27c03045168e8"
+  resolved "git://github.com/orbs-network/nebula.git#364e22070ce06b88b04b3a14e05b1d89f285a73f"
   dependencies:
     aws-sdk "^2.401.0"
     chai "^4.2.0"
