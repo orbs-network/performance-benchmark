@@ -1,30 +1,20 @@
 package benchmark
 
 import (
-	"context"
 	"fmt"
 	orbsClient "github.com/orbs-network/orbs-client-sdk-go/orbs"
 	"github.com/stretchr/testify/require"
-	"golang.org/x/time/rate"
 	"math/rand"
 	"sync"
 	"testing"
 	"time"
 )
 
-const TIMESTAMP_FORMAT = "2006-01-02T15:04:05.999Z"
-
-type testConfig struct {
-	txCount         uint64
-	txPerSec        float64
-	metricsEveryNth uint64
-}
-
 func getTransactionCount(t *testing.T, h *harness) float64 {
 	var m metrics
 
 	require.True(t, Eventually(1*time.Minute, func() bool {
-		m = h.getMetrics()
+		m = h.getMetricsFromMainNode()
 		return m != nil
 	}), "could not retrieve metrics")
 
@@ -45,16 +35,20 @@ func runTest(h *harness, config *E2EConfig) []error {
 	ctrlRand := rand.New(rand.NewSource(0))
 	var errors []error
 	var wg sync.WaitGroup
-	limiter := rate.NewLimiter(rate.Limit(config.txPerMin/60.0), 1)
-	for i := uint64(0); i < config.numberOfTransactions; i++ {
-		if err := limiter.Wait(context.Background()); err == nil {
+	//limiter := rate.NewLimiter(rate.Limit(config.txPerMin/60.0), 1)
+	txBurst := 100
+	intervalMillis := 10000 * time.Millisecond
+	fmt.Printf("BURST=%d SLEEP=%s NTH=%d\n", txBurst, intervalMillis, config.metricsEveryNth)
+	var i uint64
+	for {
+		for j := 0; j < txBurst; j++ {
 			wg.Add(1)
 			go func(idx uint64) {
 				defer wg.Done()
 				defer func() {
 					if idx == 0 || idx%config.metricsEveryNth == 0 {
-						printStats(h.getMetrics(), idx, config)
-						printMetrics(h.getMetrics())
+						printStats(h, idx)
+						//printMetrics(h.getMetricsFromMainNode())
 					}
 				}()
 				target, _ := orbsClient.CreateAccount()
@@ -64,24 +58,45 @@ func runTest(h *harness, config *E2EConfig) []error {
 					errors = append(errors, err2)
 				}
 			}(i)
-		} else {
-			errors = append(errors, err)
+			i++
 		}
+		if i >= config.numberOfTransactions {
+			break
+		}
+		time.Sleep(intervalMillis)
+
+		//if err := limiter.Wait(context.Background()); err == nil {
 	}
 	wg.Wait()
 	return errors
 }
 
-func printStats(m metrics, idx uint64, cfg *E2EConfig) {
+func printStats(h *harness, idx uint64) {
+	for _, nodeIP := range h.config.allNodeIps {
+		m := h.getMetrics(h.metricsEndpoint(nodeIP))
+		printStatsFromMetrics(nodeIP, h.config, m, idx)
+	}
+	fmt.Println()
+}
 
-	fmt.Printf("=STATS= %s txTotal=%d RateTxMin=%.0f H=%.0f currentTxIdx=%d PApiMaxTxMs=%.0f SinceLastCommitMs=%.0fms\n",
+func printStatsFromMetrics(nodeIP string, cfg *E2EConfig, m metrics, idx uint64) (int, error) {
+	return fmt.Printf("=STATS= %s %s txTotal=%d RateTxMin=%.0f H=%.0f currentTxIdx=%d PApiTxMaxMs=%.0f PApiTxP99Ms=%.0f SinceLastCommitMs=%.0f CommittedPoolTx=%.0f PendingPoolTx=%.0f TimeInPendingMax=%0.f TimeInPendingP99=%0.f StateKeys=%.0f HeapAllocMb=%.0f Goroutines=%.0f\n",
 		time.Now().UTC().Format(TIMESTAMP_FORMAT),
+		nodeIP,
 		cfg.numberOfTransactions,
 		cfg.txPerMin,
 		m["BlockStorage.BlockHeight"]["Value"],
 		idx,
 		m["PublicApi.SendTransactionProcessingTime"]["Max"],
+		m["PublicApi.SendTransactionProcessingTime"]["P99"],
 		m["ConsensusAlgo.LeanHelix.TimeSinceLastCommitMillis"]["Max"],
+		m["TransactionPool.CommittedPool.TransactionCount"]["Value"],
+		m["TransactionPool.PendingPool.TransactionCount"]["Value"],
+		m["TransactionPool.PendingPool.TimeSpentInQueue"]["Max"],
+		m["TransactionPool.PendingPool.TimeSpentInQueue"]["P99"],
+		m["StateStoragePersistence.TotalNumberOfKeys"]["Value"],
+		m["Runtime.HeapAlloc"]["Value"],
+		m["Runtime.NumGoroutine"]["Value"],
 	)
 }
 
@@ -94,15 +109,17 @@ func printMetrics(m metrics) (int, error) {
 }
 
 func TestStability(t *testing.T) {
+	t.Log("START")
 	config := getConfig()
-	h := newHarness(config.vchainId)
+	h := newHarness(config)
 
 	baseTxCount := getTransactionCount(t, h)
 
-	fmt.Printf("===== Test start ===== txCount=%d txPerMin=%.0f\n", config.numberOfTransactions, config.txPerMin)
+	t.Logf("===== Test start ===== txCount=%d txPerMin=%.0f\n", config.numberOfTransactions, config.txPerMin)
 	//fastRate := rate.NewLimiter(1000, 50)
 
 	errors := runTest(h, config)
+
 	txCount := getTransactionCount(t, h) - baseTxCount
 	expectedNumberOfTx := float64(100-config.acceptableFailureRate) / 100 * float64(config.numberOfTransactions)
 	fmt.Printf("Successfully processed %.0f%% of %d transactions\n", txCount/float64(config.numberOfTransactions)*100, config.numberOfTransactions)
