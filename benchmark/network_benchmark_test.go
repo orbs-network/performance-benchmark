@@ -36,7 +36,7 @@ func runTest(h *harness, config *E2EConfig) []error {
 	var errors []error
 	var wg sync.WaitGroup
 	//limiter := rate.NewLimiter(rate.Limit(config.txPerMin/60.0), 1)
-	txBurst := 100
+	txBurst := 500
 	intervalMillis := 10000 * time.Millisecond
 	fmt.Printf("BURST=%d SLEEP=%s NTH=%d\n", txBurst, intervalMillis, config.metricsEveryNth)
 	var i uint64
@@ -80,8 +80,9 @@ func printStats(h *harness, idx uint64) {
 }
 
 func printStatsFromMetrics(nodeIP string, cfg *E2EConfig, m metrics, idx uint64) (int, error) {
-	return fmt.Printf("=STATS= %s %s txTotal=%d RateTxMin=%.0f H=%.0f currentTxIdx=%d PApiTxMaxMs=%.0f PApiTxP99Ms=%.0f SinceLastCommitMs=%.0f CommittedPoolTx=%.0f PendingPoolTx=%.0f TimeInPendingMax=%0.f TimeInPendingP99=%0.f StateKeys=%.0f HeapAllocMb=%.0f Goroutines=%.0f\n",
+	return fmt.Printf("=STATS= %s %s %s txTotal=%d RateTxMin=%.0f H=%.0f currentTxIdx=%d PApiTxMaxMs=%.0f PApiTxP99Ms=%.0f SinceLastCommitMs=%.0f CommittedPoolTx=%.0f PendingPoolTx=%.0f TimeInPendingMax=%0.f TimeInPendingP99=%0.f StateKeys=%.0f BlockSyncCommittedBlocks=%.0f HeapAllocMb=%.0f Goroutines=%.0f\n",
 		time.Now().UTC().Format(TIMESTAMP_FORMAT),
+		m["Version.Commit"]["Value"].(string)[:8],
 		nodeIP,
 		cfg.numberOfTransactions,
 		cfg.txPerMin,
@@ -95,6 +96,7 @@ func printStatsFromMetrics(nodeIP string, cfg *E2EConfig, m metrics, idx uint64)
 		m["TransactionPool.PendingPool.TimeSpentInQueue"]["Max"],
 		m["TransactionPool.PendingPool.TimeSpentInQueue"]["P99"],
 		m["StateStoragePersistence.TotalNumberOfKeys"]["Value"],
+		m["BlockSync.Processing.CommittedBlocks"]["Value"],
 		m["Runtime.HeapAlloc"]["Value"],
 		m["Runtime.NumGoroutine"]["Value"],
 	)
