@@ -80,9 +80,15 @@ func printStats(h *harness, idx uint64) {
 }
 
 func printStatsFromMetrics(nodeIP string, cfg *E2EConfig, m metrics, idx uint64) (int, error) {
+	var version string
+	if m["Version.Commit"]["Value"] == nil {
+		version = "NA"
+	} else {
+		version = m["Version.Commit"]["Value"].(string)[:8]
+	}
 	return fmt.Printf("=STATS= %s %s %s txTotal=%d RateTxMin=%.0f H=%.0f currentTxIdx=%d PApiTxMaxMs=%.0f PApiTxP99Ms=%.0f SinceLastCommitMs=%.0f CommittedPoolTx=%.0f PendingPoolTx=%.0f TimeInPendingMax=%0.f TimeInPendingP99=%0.f StateKeys=%.0f BlockSyncCommittedBlocks=%.0f HeapAllocMb=%.0f Goroutines=%.0f\n",
 		time.Now().UTC().Format(TIMESTAMP_FORMAT),
-		m["Version.Commit"]["Value"].(string)[:8],
+		version,
 		nodeIP,
 		cfg.numberOfTransactions,
 		cfg.txPerMin,
