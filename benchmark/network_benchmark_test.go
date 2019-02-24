@@ -2,7 +2,6 @@ package benchmark
 
 import (
 	"fmt"
-	orbsClient "github.com/orbs-network/orbs-client-sdk-go/orbs"
 	"github.com/stretchr/testify/require"
 	"math/rand"
 	"sync"
@@ -31,7 +30,7 @@ func groupErrors(errors []error) map[string]int {
 	return groupedErrors
 }
 
-func runTest(h *harness, config *E2EConfig) []error {
+func runTest(h *harness, config *E2EConfig, addresses [][]byte) []error {
 	ctrlRand := rand.New(rand.NewSource(0))
 	var errors []error
 	var wg sync.WaitGroup
@@ -51,9 +50,11 @@ func runTest(h *harness, config *E2EConfig) []error {
 						//printMetrics(h.getMetricsFromMainNode())
 					}
 				}()
-				target, _ := orbsClient.CreateAccount()
-				amount := uint64(ctrlRand.Intn(10))
-				_, _, err2 := h.sendTransaction(OwnerOfAllSupply.PublicKey(), OwnerOfAllSupply.PrivateKey(), "BenchmarkToken", "transfer", uint64(amount), target.AddressAsBytes())
+				amount := uint64(ctrlRand.Intn(5))
+				addrIndex := ctrlRand.Intn(len(addresses))
+				target := addresses[addrIndex]
+				//fmt.Printf("Transfer %d to address #%d=%s\n", amount, addrIndex, encoding.EncodeHex(target))
+				_, _, err2 := h.sendTransaction(OwnerOfAllSupply.PublicKey(), OwnerOfAllSupply.PrivateKey(), "BenchmarkToken", "transfer", uint64(amount), target)
 				if err2 != nil {
 					errors = append(errors, err2)
 				}
@@ -121,12 +122,14 @@ func TestStability(t *testing.T) {
 	config := getConfig()
 	h := newHarness(config)
 
+	addresses := readAddressesFromFile()
+
 	baseTxCount := getTransactionCount(t, h)
 
 	t.Logf("===== Test start ===== txCount=%d txPerMin=%.0f\n", config.numberOfTransactions, config.txPerMin)
 	//fastRate := rate.NewLimiter(1000, 50)
 
-	errors := runTest(h, config)
+	errors := runTest(h, config, addresses)
 
 	txCount := getTransactionCount(t, h) - baseTxCount
 	expectedNumberOfTx := float64(100-config.acceptableFailureRate) / 100 * float64(config.numberOfTransactions)
@@ -153,4 +156,13 @@ func TestStability(t *testing.T) {
 	//require.Condition(t, func() (success bool) {
 	//	return ratePerSecond >= config.targetTPS
 	//}, "actual tps (%f) is less than target tps (%f)", ratePerSecond, config.targetTPS)
+}
+
+func readAddressesFromFile() [][]byte {
+	keys := getTestKeysFromFile()
+	addresses := make([][]byte, 0)
+	for _, key := range keys {
+		addresses = append(addresses, key.Address)
+	}
+	return addresses
 }

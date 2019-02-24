@@ -89,6 +89,20 @@ How to combine the multiple KPIs? Limit (2) and (3) to reasonable values (eg. 95
 
 ## TBD Technical
 
+### IP Addresses of the nodes (topology)
+The IP addresses for the nodes is stored in the file `/opt/galileo/testnet-configuration/benchmark/ips.json` on the client machine.
+These IPs must match the actual AWS IPs where the nodes are installed.
+
+### Tampering with IP addresses
+For testing purposes, such as preventing a specific node from communicating with other nodes, you can do the following:
+* `ssh ec2-user@34.216.213.19`
+* `sudo su`
+* `cd /opt/galileo/testnet-configuration/benchmark`
+* Make a backup of the file `ips.json`
+* Modify the file `ips.json`
+* Redeploy the app from Slackbot: `deploy <commit> <vchain>` - this will recreate each node's config file based on `ips.json`, then redeploy and restart the nodes, applying the new IP configuration
+* When the test is done and you wish to re-enable all nodes, restore the `ips.json` file and redeploy. 
+
 ### Updating with new build
 
 * Slackbot: ... not yet
