@@ -2,6 +2,7 @@ package benchmark
 
 import (
 	"fmt"
+	"github.com/orbs-network/orbs-client-sdk-go/crypto/encoding"
 	"github.com/stretchr/testify/require"
 	"math/rand"
 	"sync"
@@ -17,7 +18,10 @@ func getTransactionCount(t *testing.T, h *harness) float64 {
 		return m != nil
 	}), "could not retrieve metrics")
 
-	return m["TransactionPool.CommittedPool.TransactionCount"]["Value"].(float64)
+	if m["TransactionPool.CommittedPool.Transactions.Count"]["Value"] == nil {
+		return 0
+	}
+	return m["TransactionPool.CommittedPool.Transactions.Count"]["Value"].(float64)
 }
 
 func groupErrors(errors []error) map[string]int {
@@ -35,9 +39,9 @@ func runTest(h *harness, config *E2EConfig, addresses [][]byte) []error {
 	var errors []error
 	var wg sync.WaitGroup
 	//limiter := rate.NewLimiter(rate.Limit(config.txPerMin/60.0), 1)
-	txBurst := 500
-	intervalMillis := 60000 * time.Millisecond
-	fmt.Printf("BURST=%d SLEEP=%s NTH=%d\n", txBurst, intervalMillis, config.metricsEveryNth)
+	txBurst := 5
+	intervalMillis := 5000 * time.Millisecond
+	fmt.Printf("BURST=%d SLEEP=%s NTH=%d ADDRESSES=%d\n", txBurst, intervalMillis, config.metricsEveryNth, len(addresses))
 	var i uint64
 	for {
 		for j := 0; j < txBurst; j++ {
@@ -53,7 +57,7 @@ func runTest(h *harness, config *E2EConfig, addresses [][]byte) []error {
 				amount := uint64(ctrlRand.Intn(5))
 				addrIndex := ctrlRand.Intn(len(addresses))
 				target := addresses[addrIndex]
-				//fmt.Printf("Transfer %d to address #%d=%s\n", amount, addrIndex, encoding.EncodeHex(target))
+				fmt.Printf("Transfer %d to address_idx #%d=%s\n", amount, addrIndex, encoding.EncodeHex(target))
 				_, _, err2 := h.sendTransaction(OwnerOfAllSupply.PublicKey(), OwnerOfAllSupply.PrivateKey(), "BenchmarkToken", "transfer", uint64(amount), target)
 				if err2 != nil {
 					errors = append(errors, err2)
@@ -87,34 +91,33 @@ func printStatsFromMetrics(nodeIP string, cfg *E2EConfig, m metrics, idx uint64)
 	} else {
 		version = m["Version.Commit"]["Value"].(string)[:8]
 	}
-	return fmt.Printf("=STATS= %s %s %s txTotal=%d RateTxMin=%.0f H=%.0f currentTxIdx=%d PApiTxMaxMs=%.0f PApiTxP99Ms=%.0f SinceLastCommitMs=%.0f CommittedPoolTx=%.0f PendingPoolTx=%.0f TimeInPendingMax=%0.f TimeInPendingP99=%0.f StateKeys=%.0f BlockSyncCommittedBlocks=%.0f HeapAllocMb=%.0f Goroutines=%.0f\n",
+	return fmt.Printf("=STATS= %s Ver=%s IP=%s txTotal=%d RateTxMin=%.0f currentTxIdx=%d Node=%s H=%.0f PApiTxMaxMs=%.0f PApiTxP99Ms=%.0f SinceLastCommitMs=%.0f CommittedPoolTx=%.0f PendingPoolTx=%.0f TimeInPendingMax=%0.f TimeInPendingP99=%0.f StateKeys=%.0f BlockSyncCommittedBlocks=%.0f HeapAllocMb=%.0f Goroutines=%.0f\n",
 		time.Now().UTC().Format(TIMESTAMP_FORMAT),
 		version,
 		nodeIP,
 		cfg.numberOfTransactions,
 		cfg.txPerMin,
-		m["BlockStorage.BlockHeight"]["Value"],
 		idx,
-		m["PublicApi.SendTransactionProcessingTime"]["Max"],
-		m["PublicApi.SendTransactionProcessingTime"]["P99"],
-		m["ConsensusAlgo.LeanHelix.TimeSinceLastCommitMillis"]["Max"],
-		m["TransactionPool.CommittedPool.TransactionCount"]["Value"],
-		m["TransactionPool.PendingPool.TransactionCount"]["Value"],
-		m["TransactionPool.PendingPool.TimeSpentInQueue"]["Max"],
-		m["TransactionPool.PendingPool.TimeSpentInQueue"]["P99"],
-		m["StateStoragePersistence.TotalNumberOfKeys"]["Value"],
-		m["BlockSync.Processing.CommittedBlocks"]["Value"],
-		m["Runtime.HeapAlloc"]["Value"],
-		m["Runtime.NumGoroutine"]["Value"],
+		m["Node.Address"]["Value"],
+		m["BlockStorage.BlockHeight"]["Value"],
+		m["PublicApi.SendTransactionProcessingTime.Millis"]["Max"],
+		m["PublicApi.SendTransactionProcessingTime.Millis"]["P99"],
+		m["ConsensusAlgo.LeanHelix.TimeSinceLastCommit.Millis"]["Max"],
+		m["TransactionPool.CommittedPool.Transactions.Count"]["Value"],
+		m["TransactionPool.PendingPool.Transactions.Count"]["Value"],
+		m["TransactionPool.PendingPool.TimeSpentInQueue.Millis"]["Max"],
+		m["TransactionPool.PendingPool.TimeSpentInQueue.Millis"]["P99"],
+		m["StateStoragePersistence.TotalNumberOfKeys.Count"]["Value"],
+		m["BlockSync.ProcessingBlocksState.CommittedBlocks.Count"]["Value"],
+		m["Runtime.HeapAlloc.Bytes"]["Value"],
+		m["Runtime.NumGoroutine.Value"]["Value"],
 	)
 }
 
-func printMetrics(m metrics) (int, error) {
-	//return fmt.Printf("H=%v V=%v\n",
-	//	m["BlockStorage.BlockHeight"]["Value"],
-	//	m["ConsensusAlgo.LeanHelix.CurrentElectionCount"]["Value"])
-	return fmt.Printf("%v\n",
-		m)
+func TestStats(t *testing.T) {
+	config := getConfig()
+	h := newHarness(config)
+	printStats(h, 0)
 }
 
 func TestStability(t *testing.T) {
@@ -126,7 +129,8 @@ func TestStability(t *testing.T) {
 
 	baseTxCount := getTransactionCount(t, h)
 
-	t.Logf("===== Test start ===== txCount=%d txPerMin=%.0f\n", config.numberOfTransactions, config.txPerMin)
+	t.Logf("===== Test start ===== txCount=%d txPerMin=%.0f addressesCount=%d\n",
+		config.numberOfTransactions, config.txPerMin, len(addresses))
 	//fastRate := rate.NewLimiter(1000, 50)
 
 	errors := runTest(h, config, addresses)

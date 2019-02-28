@@ -32,8 +32,8 @@ const PROCESSOR_TYPE_NATIVE = 1
 
 func getConfig() *E2EConfig {
 	vchainId := VIRTUAL_CHAIN_ID
-	baseUrl := "http://54.194.120.89:8080"
-	//baseUrl := "http://localhost:8080"
+	//baseUrl := "http://54.194.120.89:8080"
+	baseUrl := "http://localhost:8080"
 
 	stressTestNumberOfTransactions := uint64(1000000000)
 	stressTestTransactionsPerMinute := float64(240)
