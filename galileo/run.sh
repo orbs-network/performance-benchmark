@@ -1,7 +1,7 @@
 #!/bin/bash
 
-export API_ENDPOINT=${API_ENDPOINT-http://54.194.120.89/vchains/2000/api/v1/}
-export BASE_URL=${BASE_URL-http://54.194.120.89/vchains/2000}
+export API_ENDPOINT=${API_ENDPOINT-http://54.194.120.89/vchains/1000/api/v1/}
+export BASE_URL=${BASE_URL-http://54.194.120.89/vchains/1000}
 export COMMIT=${COMMIT-master}
 DATE=$(date +%Y-%m-%d-%H%M%S)
 export RESULTS=${RESULTS-results/$COMMIT/$DATE}
@@ -10,7 +10,7 @@ export STRESS_TEST_ALL_NODE_IPS="54.194.120.89 35.177.173.249 52.47.211.186 35.1
 
 export STRESS_TEST_TRANSACTIONS_PER_MINUTE=10
 export STRESS_TEST_NUMBER_OF_TRANSACTIONS= 120000
-export VCHAIN=2000
+export VCHAIN=1000
 export LOG_FILE="stability-${DATE}.log"
 
 echo "STRESS_TEST_NUMBER_OF_TRANSACTIONS=${STRESS_TEST_NUMBER_OF_TRANSACTIONS}"
@@ -28,7 +28,7 @@ echo
 echo "To follow progress, run: tail -f ${LOG_FILE}"
 echo
 
-go test ./../benchmark/... -timeout 100000m -count 1 -v > ${LOG_FILE} &  CMDPID=$!
+go test ./../benchmark/... -run TestStability -timeout 100000m -count 1 -v > ${LOG_FILE} &  CMDPID=$!
 echo
 echo "Started process ID $CMDPID. To stop it, run:"
 echo "kill $CMDPID"
