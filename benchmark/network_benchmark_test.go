@@ -39,8 +39,8 @@ func runTest(h *harness, config *E2EConfig, addresses [][]byte) []error {
 	var errors []error
 	var wg sync.WaitGroup
 	//limiter := rate.NewLimiter(rate.Limit(config.txPerMin/60.0), 1)
-	txBurst := 5
-	intervalMillis := 5000 * time.Millisecond
+	txBurst := 500
+	intervalMillis := 60000 * time.Millisecond
 	fmt.Printf("BURST=%d SLEEP=%s NTH=%d ADDRESSES=%d\n", txBurst, intervalMillis, config.metricsEveryNth, len(addresses))
 	var i uint64
 	for {
@@ -126,6 +126,10 @@ func TestStability(t *testing.T) {
 	h := newHarness(config)
 
 	addresses := readAddressesFromFile()
+	if addresses == nil {
+		t.Errorf("Addresses not loaded, perhaps %s is not found", TEST_KEYS_FILENAME)
+		return
+	}
 
 	baseTxCount := getTransactionCount(t, h)
 
@@ -164,6 +168,10 @@ func TestStability(t *testing.T) {
 
 func readAddressesFromFile() [][]byte {
 	keys := getTestKeysFromFile()
+	if keys == nil {
+		return nil
+	}
+
 	addresses := make([][]byte, 0)
 	for _, key := range keys {
 		addresses = append(addresses, key.Address)

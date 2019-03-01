@@ -7,6 +7,7 @@ import (
 
 // Enough to run it once to generate the addresses.json
 func TestGenerateKeys(t *testing.T) {
+	t.Skip() // don't recreate keys by mistake
 	count := commandGenerateTestKeys()
 	keys := getTestKeysFromFile()
 

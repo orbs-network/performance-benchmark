@@ -47,20 +47,11 @@ func commandGenerateTestKeys() int {
 	return KEY_COUNT
 }
 
-func getTestKeyFromFile(id string) *jsoncodec.RawKey {
-	filename := TEST_KEYS_FILENAME
-	keys := getTestKeysFromFile()
-	key, found := keys[id]
-	if !found {
-		die("Key with id '%s' not found in key file '%s'.", id, filename)
-	}
-	return key
-}
-
 func getTestKeysFromFile() map[string]*jsoncodec.RawKey {
 	filename := TEST_KEYS_FILENAME
 	if !doesFileExist(filename) {
-		commandGenerateTestKeys()
+		//commandGenerateTestKeys()
+		return nil
 	}
 
 	bytes, err := ioutil.ReadFile(filename)
