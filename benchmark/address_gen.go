@@ -50,7 +50,6 @@ func commandGenerateTestKeys() int {
 func getTestKeysFromFile() map[string]*jsoncodec.RawKey {
 	filename := TEST_KEYS_FILENAME
 	if !doesFileExist(filename) {
-		//commandGenerateTestKeys()
 		return nil
 	}
 

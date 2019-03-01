@@ -2,7 +2,6 @@ package benchmark
 
 import (
 	"fmt"
-	"github.com/orbs-network/orbs-client-sdk-go/crypto/encoding"
 	"github.com/stretchr/testify/require"
 	"math/rand"
 	"sync"
@@ -57,7 +56,7 @@ func runTest(h *harness, config *E2EConfig, addresses [][]byte) []error {
 				amount := uint64(ctrlRand.Intn(5))
 				addrIndex := ctrlRand.Intn(len(addresses))
 				target := addresses[addrIndex]
-				fmt.Printf("Transfer %d to address_idx #%d=%s\n", amount, addrIndex, encoding.EncodeHex(target))
+				//fmt.Printf("Transfer %d to address_idx #%d=%s\n", amount, addrIndex, encoding.EncodeHex(target))
 				_, _, err2 := h.sendTransaction(OwnerOfAllSupply.PublicKey(), OwnerOfAllSupply.PrivateKey(), "BenchmarkToken", "transfer", uint64(amount), target)
 				if err2 != nil {
 					errors = append(errors, err2)
@@ -175,6 +174,7 @@ func readAddressesFromFile() [][]byte {
 	addresses := make([][]byte, 0)
 	for _, key := range keys {
 		addresses = append(addresses, key.Address)
+		//fmt.Printf("Added to addresses array: %s\n", encoding.EncodeHex(key.Address))
 	}
 	return addresses
 }
