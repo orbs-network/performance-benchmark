@@ -1,7 +1,8 @@
 #!/bin/bash
 
-export API_ENDPOINT=${API_ENDPOINT-http://54.194.120.89/vchains/1000/api/v1/}
-export BASE_URL=${BASE_URL-http://54.194.120.89/vchains/1000}
+export API_ENDPOINT=${API_ENDPOINT-http://35.177.173.249/vchains/1000/api/v1/}
+# This is the IP we are sending transactions too, make sure it stays up!
+export BASE_URL=${BASE_URL-http://35.177.173.249/vchains/1000}
 export COMMIT=${COMMIT-master}
 DATE=$(date +%Y-%m-%d-%H%M%S)
 export RESULTS=${RESULTS-results/$COMMIT/$DATE}
