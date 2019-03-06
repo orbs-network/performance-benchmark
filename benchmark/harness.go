@@ -1,11 +1,13 @@
 package benchmark
 
 import (
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"github.com/orbs-network/orbs-client-sdk-go/codec"
 	"github.com/orbs-network/orbs-client-sdk-go/crypto/keys"
 	orbsClient "github.com/orbs-network/orbs-client-sdk-go/orbs"
+	"github.com/orbs-network/orbs-network-go/crypto/digest"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/require"
 	"io/ioutil"
@@ -59,6 +61,35 @@ func (h *harness) sendTransaction(senderPublicKey []byte, senderPrivateKey []byt
 	}
 	response, err = h.client.SendTransaction(payload)
 	return
+}
+
+func createPayloadForUnsafeTestsSetElectedValidators(electedValidatorIndexes []int) []byte {
+	joinedElectedValidatorAddresses := []byte{}
+	for _, electedValidatorIndex := range electedValidatorIndexes {
+		addr := StabilityNodeAddresses[electedValidatorIndex]
+		address, err := hex.DecodeString(addr)
+		if err != nil {
+
+		}
+		joinedElectedValidatorAddresses = append(joinedElectedValidatorAddresses, address...)
+	}
+	if len(joinedElectedValidatorAddresses) != digest.NODE_ADDRESS_SIZE_BYTES*len(electedValidatorIndexes) {
+		panic("joinedElectedValidatorAddresses length is invalid")
+	}
+
+	return joinedElectedValidatorAddresses
+}
+
+func (h *harness) UnsafeTests_SetElectedValidators(senderPublicKey []byte, senderPrivateKey []byte, electedValidatorIndexes []int) error {
+	payload := createPayloadForUnsafeTestsSetElectedValidators(electedValidatorIndexes)
+	res, err := h.client.SendTransaction(payload)
+	if err != nil {
+		return errors.Wrap(err, "UnsafeTests_SetElectedValidators()")
+	}
+	if res.ExecutionResult != codec.EXECUTION_RESULT_SUCCESS {
+		return errors.Errorf("Failed to execute unsafe set elected validators contract. Result: %s", res.ExecutionResult)
+	}
+	return nil
 }
 
 func (h *harness) runQuery(senderPublicKey []byte, contractName string, methodName string, args ...interface{}) (response *codec.RunQueryResponse, err error) {
