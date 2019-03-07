@@ -3,10 +3,16 @@
 # Config for stability network
 export VCHAIN=1000
 export API_ENDPOINT=${API_ENDPOINT-http://35.177.173.249/vchains/${VCHAIN}/api/v1/}
+export TX_BURST_COUNT=100
+export INTERVAL_BETWEEN_BURSTS_MILLIS=60000
+export STRESS_TEST_METRICS_EVERY_NTH_TRANSACTION=100
 
 # Config for validators network
 # export VCHAIN=2019
 # export API_ENDPOINT=${API_ENDPOINT-http://3.209.8.117/vchains/${VCHAIN}/api/v1/}
+#export TX_BURST_COUNT=1
+#export INTERVAL_BETWEEN_BURSTS_MILLIS=300000
+#export STRESS_TEST_METRICS_EVERY_NTH_TRANSACTION=1
 
 # This is the IP we are sending transactions too, make sure it stays up!
 #export BASE_URL=${BASE_URL-http://35.177.173.249/vchains/1000}
@@ -14,14 +20,8 @@ export COMMIT=${COMMIT-master}
 DATE=$(date +%Y-%m-%d-%H%M%S)
 export RESULTS=${RESULTS-results/$COMMIT/$DATE}
 
+# !!This is used only for collecting metrics, it does not affect which IPs are on the network (every node has a static list of its peers)!!
 export STRESS_TEST_ALL_NODE_IPS="54.194.120.89 35.177.173.249 52.47.211.186 35.174.231.96 18.191.62.179 52.60.152.22 18.195.172.240"
-
-#export STRESS_TEST_TRANSACTIONS_PER_MINUTE=10
-#export STRESS_TEST_NUMBER_OF_TRANSACTIONS= 120000
-
-export TX_BURST_COUNT=1
-export INTERVAL_BETWEEN_BURSTS_MILLIS=10000
-export STRESS_TEST_METRICS_EVERY_NTH_TRANSACTION=1
 
 export LOG_FILE="stability-${DATE}.log"
 
