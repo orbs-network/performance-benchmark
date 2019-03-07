@@ -15,12 +15,14 @@ type E2EConfig struct {
 }
 
 type StressTestConfig struct {
-	allNodeIps            []string
-	numberOfTransactions  uint64
-	acceptableFailureRate uint64
-	targetTPS             float64
-	txPerMin              float64
-	metricsEveryNth       uint64
+	allNodeIps                  []string
+	numberOfTransactions        uint64
+	acceptableFailureRate       uint64
+	targetTPS                   float64
+	txPerMin                    float64
+	metricsEveryNth             uint64
+	txBurstCount                uint64
+	intervalBetweenBurstsMillis uint64
 }
 
 const TIMESTAMP_FORMAT = "2006-01-02T15:04:05.000Z"
@@ -40,6 +42,10 @@ func getConfig() *E2EConfig {
 	stressTestFailureRate := uint64(20)
 	stressTestTargetTPS := float64(20)
 	stressTestMetricsEveryNthTransaction := uint64(100)
+
+	stressTestTxBurstCount := uint64(1)
+	stressTestIntervalBetweenBurstsMillis := uint64(300000)
+
 	stressTestAllNodeIps := "54.194.120.89 35.177.173.249 52.47.211.186 35.174.231.96 18.191.62.179 52.60.152.22 18.195.172.240"
 
 	ethereumEndpoint := "http://127.0.0.1:8545"
@@ -52,6 +58,14 @@ func getConfig() *E2EConfig {
 
 	if vcid, err := strconv.ParseUint(os.Getenv("VCHAIN"), 10, 0); err == nil {
 		vchainId = uint32(vcid)
+	}
+
+	if txBurstCount, err := strconv.ParseUint(os.Getenv("TX_BURST_COUNT"), 10, 0); err == nil {
+		stressTestTxBurstCount = txBurstCount
+	}
+
+	if intervalBetweenBurstsMillis, err := strconv.ParseUint(os.Getenv("INTERVAL_BETWEEN_BURSTS_MILLIS"), 10, 0); err == nil {
+		stressTestIntervalBetweenBurstsMillis = intervalBetweenBurstsMillis
 	}
 
 	if numTx, err := strconv.ParseUint(os.Getenv("STRESS_TEST_NUMBER_OF_TRANSACTIONS"), 10, 0); err == nil {
@@ -85,12 +99,14 @@ func getConfig() *E2EConfig {
 		ethereumEndpoint,
 
 		StressTestConfig{
-			allNodeIps:            allNodeIps,
-			numberOfTransactions:  stressTestNumberOfTransactions,
-			acceptableFailureRate: stressTestFailureRate,
-			targetTPS:             stressTestTargetTPS,
-			txPerMin:              stressTestTransactionsPerMinute,
-			metricsEveryNth:       stressTestMetricsEveryNthTransaction,
+			allNodeIps:                  allNodeIps,
+			numberOfTransactions:        stressTestNumberOfTransactions,
+			acceptableFailureRate:       stressTestFailureRate,
+			targetTPS:                   stressTestTargetTPS,
+			txPerMin:                    stressTestTransactionsPerMinute,
+			metricsEveryNth:             stressTestMetricsEveryNthTransaction,
+			txBurstCount:                stressTestTxBurstCount,
+			intervalBetweenBurstsMillis: stressTestIntervalBetweenBurstsMillis,
 		},
 	}
 }

@@ -38,8 +38,8 @@ func runTest(h *harness, config *E2EConfig, addresses [][]byte) []error {
 	var errors []error
 	var wg sync.WaitGroup
 	//limiter := rate.NewLimiter(rate.Limit(config.txPerMin/60.0), 1)
-	txBurst := 500
-	intervalMillis := 60000 * time.Millisecond
+	txBurst := int(config.txBurstCount)
+	intervalMillis := time.Duration(config.intervalBetweenBurstsMillis) * time.Millisecond
 	fmt.Printf("BURST=%d SLEEP=%s NTH=%d ADDRESSES=%d\n", txBurst, intervalMillis, config.metricsEveryNth, len(addresses))
 	var i uint64
 	for {
