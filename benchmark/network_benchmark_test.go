@@ -119,6 +119,13 @@ func TestStats(t *testing.T) {
 	printStats(h, 0)
 }
 
+// This is not really a test, just a way to trigger this from outside
+func TestSetElectionValidator(t *testing.T) {
+	config := getConfig()
+	h := newHarness(config)
+	h._unsafe_SetElectedValidators(OwnerOfAllSupply.PublicKey(), OwnerOfAllSupply.PrivateKey(), []int{0, 1, 2, 3, 4, 5, 6})
+}
+
 func TestStability(t *testing.T) {
 	t.Log("START")
 	config := getConfig()

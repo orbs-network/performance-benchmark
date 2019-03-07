@@ -24,9 +24,9 @@ func createPayloadForUnsafeTestsSetElectedValidators(electedValidatorIndexes []i
 	return joinedElectedValidatorAddresses
 }
 
-func (h *harness) UnsafeTests_SetElectedValidators(senderPublicKey []byte, senderPrivateKey []byte, electedValidatorIndexes []int) error {
+func (h *harness) _unsafe_SetElectedValidators(senderPublicKey []byte, senderPrivateKey []byte, electedValidatorIndexes []int) error {
 	payload := createPayloadForUnsafeTestsSetElectedValidators(electedValidatorIndexes)
-	res, err := h.client.SendTransaction(payload)
+	res, _, err := h.sendTransaction(OwnerOfAllSupply.PublicKey(), OwnerOfAllSupply.PrivateKey(), "_Elections", "unsafetests_setElectedValidators", payload)
 	if err != nil {
 		return errors.Wrap(err, "UnsafeTests_SetElectedValidators()")
 	}
