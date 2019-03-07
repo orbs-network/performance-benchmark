@@ -3,7 +3,6 @@ package benchmark
 import (
 	"encoding/hex"
 	"github.com/orbs-network/orbs-client-sdk-go/codec"
-	"github.com/orbs-network/orbs-network-go/crypto/digest"
 	"github.com/pkg/errors"
 )
 
@@ -17,7 +16,7 @@ func createPayloadForUnsafeTestsSetElectedValidators(electedValidatorIndexes []i
 		}
 		joinedElectedValidatorAddresses = append(joinedElectedValidatorAddresses, address...)
 	}
-	if len(joinedElectedValidatorAddresses) != digest.NODE_ADDRESS_SIZE_BYTES*len(electedValidatorIndexes) {
+	if len(joinedElectedValidatorAddresses) != 20*len(electedValidatorIndexes) {
 		panic("joinedElectedValidatorAddresses length is invalid")
 	}
 
