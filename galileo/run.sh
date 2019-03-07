@@ -1,7 +1,13 @@
 #!/bin/bash
 
+# Config for stability network
 export VCHAIN=1000
 export API_ENDPOINT=${API_ENDPOINT-http://35.177.173.249/vchains/${VCHAIN}/api/v1/}
+
+# Config for validators network
+# export VCHAIN=2019
+# export API_ENDPOINT=${API_ENDPOINT-http://3.209.8.117/vchains/${VCHAIN}/api/v1/}
+
 # This is the IP we are sending transactions too, make sure it stays up!
 #export BASE_URL=${BASE_URL-http://35.177.173.249/vchains/1000}
 export COMMIT=${COMMIT-master}
