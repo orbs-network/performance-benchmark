@@ -44,7 +44,7 @@ echo
 echo "To follow progress, run: tail -f ${LOG_FILE}"
 echo
 
-go test ./../benchmark/... -run TestStability -timeout 100000m -count 1 -v > ${LOG_FILE} &  CMDPID=$!
+go test ./../benchmark/... -run TestStability -tags unsafetests -timeout 100000m -count 1 -v > ${LOG_FILE} &  CMDPID=$!
 echo
 echo "Started process ID $CMDPID. To stop it, run:"
 echo "kill $CMDPID"
