@@ -6,7 +6,7 @@ export API_ENDPOINT=${API_ENDPOINT-http://35.177.173.249/vchains/${VCHAIN}/api/v
 export TX_BURST_COUNT=100
 export INTERVAL_BETWEEN_BURSTS_MILLIS=60000
 export STRESS_TEST_METRICS_EVERY_NTH_TRANSACTION=100
-export REELECT_EVERY_MILLIS=3600000
+#export REELECT_EVERY_MILLIS=60000
 
 # Config for validators network
 # export VCHAIN=2019
@@ -50,3 +50,7 @@ echo
 echo "Started process ID $CMDPID. To stop it, run:"
 echo "kill $CMDPID"
 echo
+echo "Tailing the log file, you can safely stop it with ^C."
+echo "Process $CMDPID will continue in the background"
+echo
+tail -f ${LOG_FILE}

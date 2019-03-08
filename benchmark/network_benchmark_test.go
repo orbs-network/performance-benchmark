@@ -77,21 +77,23 @@ func runTest(h *harness, config *E2EConfig, addresses [][]byte) []error {
 }
 
 func maybeReelectCommittee(h *harness) {
-	if time.Now().After(h.nextReelection) {
-		fmt.Printf("Reelecting committee")
-		h.nextReelection = time.Now().Add(REELECTION_INTERVAL)
+	now := time.Now()
+	if now.After(h.nextReelection) {
+		h.nextReelection = now.Add(REELECTION_INTERVAL)
 		elected := calcElected()
+		fmt.Printf("== %s Reelecting committee indices %v on vchain %d. Next reelection on %s\n",
+			now.UTC().Format(TIMESTAMP_FORMAT), elected, h.client.VirtualChainId, h.nextReelection.UTC().Format(TIMESTAMP_FORMAT))
 		err := h._unsafe_SetElectedValidators(OwnerOfAllSupply.PublicKey(), OwnerOfAllSupply.PrivateKey(), elected)
 		if err != nil {
 			fmt.Printf("Error electing %v, next in %s", elected, h.nextReelection)
 		} else {
-			fmt.Printf("Success electing committee %v, next in %s", elected, h.nextReelection)
+			fmt.Printf("== %s Success electing committee %v, next in %s\n", now.UTC().Format(TIMESTAMP_FORMAT), elected, h.nextReelection.UTC().Format(TIMESTAMP_FORMAT))
 		}
 	}
 }
 
 func calcElected() []int {
-	return []int{0, 1, 2, 3, 4}
+	return []int{5, 6, 2, 3, 4}
 }
 
 func printStats(h *harness, idx uint64) {
