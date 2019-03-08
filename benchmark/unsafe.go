@@ -4,6 +4,8 @@ import (
 	"encoding/hex"
 	"github.com/orbs-network/orbs-client-sdk-go/codec"
 	"github.com/pkg/errors"
+	"math/rand"
+	"time"
 )
 
 func createPayloadForUnsafeTestsSetElectedValidators(electedValidatorIndexes []int) []byte {
@@ -35,6 +37,11 @@ func (h *harness) _unsafe_SetElectedValidators(senderPublicKey []byte, senderPri
 		return errors.Errorf("Failed to execute unsafe set elected validators contract. Result: %+v", res)
 	}
 	return nil
+}
+
+func calcElected(subset int, total int) []int {
+	rand.Seed(time.Now().UnixNano())
+	return rand.Perm(total)[:subset]
 }
 
 // 0 1 2 3 4 5 6

@@ -14,3 +14,11 @@ func TestCreatePayloadForUnsafeTestsSetElectedValidators(t *testing.T) {
 	require.Equal(t, 40, len(payload))
 
 }
+
+func TestCalcElected(t *testing.T) {
+	for i := 0; i < 100; i++ {
+		elected := calcElected(4, 7)
+		t.Logf("Elected: %v", elected)
+		require.Equal(t, 4, len(elected))
+	}
+}

@@ -67,7 +67,7 @@ func runTest(h *harness, config *E2EConfig, addresses [][]byte) []error {
 		if i >= config.numberOfTransactions {
 			break
 		}
-		maybeReelectCommittee(h)
+		maybeReelectCommittee(h, 4)
 		time.Sleep(intervalMillis)
 
 		//if err := limiter.Wait(context.Background()); err == nil {
@@ -76,11 +76,12 @@ func runTest(h *harness, config *E2EConfig, addresses [][]byte) []error {
 	return errors
 }
 
-func maybeReelectCommittee(h *harness) {
+func maybeReelectCommittee(h *harness, committeeSize int) {
 	now := time.Now()
+	fmt.Printf("=%s Reelect?=\n", now.UTC().Format(TIMESTAMP_FORMAT))
 	if now.After(h.nextReelection) {
 		h.nextReelection = now.Add(REELECTION_INTERVAL)
-		elected := calcElected()
+		elected := calcElected(committeeSize, len(StabilityNodeAddresses))
 		fmt.Printf("== %s Reelecting committee indices %v on vchain %d. Next reelection on %s\n",
 			now.UTC().Format(TIMESTAMP_FORMAT), elected, h.client.VirtualChainId, h.nextReelection.UTC().Format(TIMESTAMP_FORMAT))
 		err := h._unsafe_SetElectedValidators(OwnerOfAllSupply.PublicKey(), OwnerOfAllSupply.PrivateKey(), elected)
@@ -90,10 +91,6 @@ func maybeReelectCommittee(h *harness) {
 			fmt.Printf("== %s Success electing committee %v, next in %s\n", now.UTC().Format(TIMESTAMP_FORMAT), elected, h.nextReelection.UTC().Format(TIMESTAMP_FORMAT))
 		}
 	}
-}
-
-func calcElected() []int {
-	return []int{5, 6, 2, 3, 4}
 }
 
 func printStats(h *harness, idx uint64) {
@@ -151,6 +148,21 @@ func TestSetElectionValidator(t *testing.T) {
 	elected := []int{0, 1, 2, 3, 4}
 	t.Logf("Electing indices: %v", elected)
 	require.Nil(t, h._unsafe_SetElectedValidators(OwnerOfAllSupply.PublicKey(), OwnerOfAllSupply.PrivateKey(), elected))
+}
+
+func TestPeriodicReelection(t *testing.T) {
+	config := getConfig()
+	h := newHarness(config)
+	interval := 1 * time.Minute
+	committeeSize := 4
+
+	t.Logf("===== TestPeriodicReelection start ===== checkInterval=%s reelectInterval=%s committeeSize=%d\n",
+		interval, REELECTION_INTERVAL, committeeSize)
+
+	for {
+		maybeReelectCommittee(h, committeeSize)
+		time.Sleep(interval)
+	}
 }
 
 func TestStability(t *testing.T) {
