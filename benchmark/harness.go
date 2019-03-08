@@ -15,14 +15,18 @@ import (
 )
 
 type harness struct {
-	config *E2EConfig
-	client *orbsClient.OrbsClient
+	config         *E2EConfig
+	client         *orbsClient.OrbsClient
+	reelectionDue  bool
+	nextReelection time.Time
 }
 
 func newHarness(config *E2EConfig) *harness {
 	return &harness{
-		config: config,
-		client: orbsClient.NewClient(getConfig().baseUrl, config.vchainId, codec.NETWORK_TYPE_TEST_NET),
+		config:         config,
+		client:         orbsClient.NewClient(getConfig().baseUrl, config.vchainId, codec.NETWORK_TYPE_TEST_NET),
+		reelectionDue:  false,
+		nextReelection: time.Now().Add(REELECTION_INTERVAL),
 	}
 }
 
@@ -52,7 +56,9 @@ func (h *harness) deployNativeContract(from *keys.Ed25519KeyPair, contractName s
 	return executionResult, txStatus, err
 }
 
+// This sends to vchain as defined in VCHAIN environment variable
 func (h *harness) sendTransaction(senderPublicKey []byte, senderPrivateKey []byte, contractName string, methodName string, args ...interface{}) (response *codec.SendTransactionResponse, txId string, err error) {
+	fmt.Printf("Sending to vchain: %d", h.client.VirtualChainId)
 	payload, txId, err := h.client.CreateTransaction(senderPublicKey, senderPrivateKey, contractName, methodName, args...)
 	if err != nil {
 		return nil, txId, err

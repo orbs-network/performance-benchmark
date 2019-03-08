@@ -23,14 +23,21 @@ func createPayloadForUnsafeTestsSetElectedValidators(electedValidatorIndexes []i
 	return joinedElectedValidatorAddresses
 }
 
+// Make sure to send to the correct vchain
+// Determined by VCHAIN environment variable
 func (h *harness) _unsafe_SetElectedValidators(senderPublicKey []byte, senderPrivateKey []byte, electedValidatorIndexes []int) error {
 	payload := createPayloadForUnsafeTestsSetElectedValidators(electedValidatorIndexes)
 	res, _, err := h.sendTransaction(OwnerOfAllSupply.PublicKey(), OwnerOfAllSupply.PrivateKey(), "_Elections", "unsafetests_setElectedValidators", payload)
 	if err != nil {
-		return errors.Wrapf(err, "UnsafeTests_SetElectedValidators() Result: +%v", res)
+		return errors.Wrapf(err, "UnsafeTests_SetElectedValidators() Result: %v", res)
 	}
 	if res.ExecutionResult != codec.EXECUTION_RESULT_SUCCESS {
 		return errors.Errorf("Failed to execute unsafe set elected validators contract. Result: %+v", res)
 	}
 	return nil
 }
+
+// 0 1 2 3 4 5 6
+// 2 3 5 6
+// 0 2 4 5
+// 1 2 3 4

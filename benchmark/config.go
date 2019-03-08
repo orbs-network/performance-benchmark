@@ -4,6 +4,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"time"
 )
 
 type E2EConfig struct {
@@ -31,6 +32,8 @@ const VIRTUAL_CHAIN_ID = uint32(2000)
 
 // "github.com/orbs-network/orbs-spec/types/go/protocol"
 const PROCESSOR_TYPE_NATIVE = 1
+
+const REELECTION_INTERVAL = 1 * time.Minute
 
 func getConfig() *E2EConfig {
 	vchainId := VIRTUAL_CHAIN_ID

@@ -67,12 +67,31 @@ func runTest(h *harness, config *E2EConfig, addresses [][]byte) []error {
 		if i >= config.numberOfTransactions {
 			break
 		}
+		maybeReelectCommittee(h)
 		time.Sleep(intervalMillis)
 
 		//if err := limiter.Wait(context.Background()); err == nil {
 	}
 	wg.Wait()
 	return errors
+}
+
+func maybeReelectCommittee(h *harness) {
+	if time.Now().After(h.nextReelection) {
+		fmt.Printf("Reelecting committee")
+		h.nextReelection = time.Now().Add(REELECTION_INTERVAL)
+		elected := calcElected()
+		err := h._unsafe_SetElectedValidators(OwnerOfAllSupply.PublicKey(), OwnerOfAllSupply.PrivateKey(), elected)
+		if err != nil {
+			fmt.Printf("Error electing %v, next in %s", elected, h.nextReelection)
+		} else {
+			fmt.Printf("Success electing committee %v, next in %s", elected, h.nextReelection)
+		}
+	}
+}
+
+func calcElected() []int {
+	return []int{0, 1, 2, 3, 4}
 }
 
 func printStats(h *harness, idx uint64) {
