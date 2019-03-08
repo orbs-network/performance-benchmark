@@ -120,10 +120,16 @@ func TestStats(t *testing.T) {
 }
 
 // This is not really a test, just a way to trigger this from outside
+
+// To run from command line:
+// 1. Run export API_ENDPOINT=http://35.177.173.249/vchains/1000/api/v1/ (or any other URL you want to send the command to)
+// 2. Run: go test ./benchmark/... -run TestSetElectionValidator -v
 func TestSetElectionValidator(t *testing.T) {
 	config := getConfig()
 	h := newHarness(config)
-	h._unsafe_SetElectedValidators(OwnerOfAllSupply.PublicKey(), OwnerOfAllSupply.PrivateKey(), []int{0, 1, 2, 3, 4, 5, 6})
+	elected := []int{0, 1, 2, 3, 4}
+	t.Logf("Electing indices: %v", elected)
+	require.Nil(t, h._unsafe_SetElectedValidators(OwnerOfAllSupply.PublicKey(), OwnerOfAllSupply.PrivateKey(), elected))
 }
 
 func TestStability(t *testing.T) {

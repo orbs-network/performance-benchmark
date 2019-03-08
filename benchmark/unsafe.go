@@ -27,10 +27,10 @@ func (h *harness) _unsafe_SetElectedValidators(senderPublicKey []byte, senderPri
 	payload := createPayloadForUnsafeTestsSetElectedValidators(electedValidatorIndexes)
 	res, _, err := h.sendTransaction(OwnerOfAllSupply.PublicKey(), OwnerOfAllSupply.PrivateKey(), "_Elections", "unsafetests_setElectedValidators", payload)
 	if err != nil {
-		return errors.Wrap(err, "UnsafeTests_SetElectedValidators()")
+		return errors.Wrapf(err, "UnsafeTests_SetElectedValidators() Result: +%v", res)
 	}
 	if res.ExecutionResult != codec.EXECUTION_RESULT_SUCCESS {
-		return errors.Errorf("Failed to execute unsafe set elected validators contract. Result: %s", res.ExecutionResult)
+		return errors.Errorf("Failed to execute unsafe set elected validators contract. Result: %+v", res)
 	}
 	return nil
 }
