@@ -3,7 +3,9 @@ package benchmark
 import (
 	"encoding/hex"
 	"github.com/stretchr/testify/require"
+	"math/rand"
 	"testing"
+	"time"
 )
 
 func TestCreatePayloadForUnsafeTestsSetElectedValidators(t *testing.T) {
@@ -16,9 +18,11 @@ func TestCreatePayloadForUnsafeTestsSetElectedValidators(t *testing.T) {
 }
 
 func TestCalcElected(t *testing.T) {
+	rand.Seed(time.Now().UnixNano())
 	for i := 0; i < 100; i++ {
-		elected := calcElected(4, 7)
+		size := 4 + rand.Intn(3)
+		elected := calcElected(size, 7)
 		t.Logf("Elected: %v", elected)
-		require.Equal(t, 4, len(elected))
+		require.Equal(t, size, len(elected))
 	}
 }

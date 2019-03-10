@@ -67,7 +67,6 @@ func runTest(h *harness, config *E2EConfig, addresses [][]byte) []error {
 		if i >= config.numberOfTransactions {
 			break
 		}
-		maybeReelectCommittee(h, 4)
 		time.Sleep(intervalMillis)
 
 		//if err := limiter.Wait(context.Background()); err == nil {
@@ -154,12 +153,14 @@ func TestPeriodicReelection(t *testing.T) {
 	config := getConfig()
 	h := newHarness(config)
 	interval := 1 * time.Minute
-	committeeSize := 4
+	rand.Seed(time.Now().UnixNano())
+	committeeSize := 4 + rand.Intn(3)
 
 	t.Logf("===== TestPeriodicReelection start ===== checkInterval=%s reelectInterval=%s committeeSize=%d\n",
 		interval, REELECTION_INTERVAL, committeeSize)
 
 	for {
+
 		maybeReelectCommittee(h, committeeSize)
 		time.Sleep(interval)
 	}
