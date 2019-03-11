@@ -154,13 +154,14 @@ func TestPeriodicReelection(t *testing.T) {
 	h := newHarness(config)
 	interval := 1 * time.Minute
 	rand.Seed(time.Now().UnixNano())
-	committeeSize := 4 + rand.Intn(3)
+	minSize := 4
+	maxSize := 7
 
-	t.Logf("===== TestPeriodicReelection start ===== checkInterval=%s reelectInterval=%s committeeSize=%d\n",
-		interval, REELECTION_INTERVAL, committeeSize)
+	t.Logf("===== TestPeriodicReelection start ===== checkInterval=%s reelectInterval=%s committeeSize Min=%d Max=%d\n",
+		interval, REELECTION_INTERVAL, minSize, maxSize)
 
 	for {
-
+		committeeSize := minSize + rand.Intn(maxSize-minSize)
 		maybeReelectCommittee(h, committeeSize)
 		time.Sleep(interval)
 	}
