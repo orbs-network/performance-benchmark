@@ -40,7 +40,13 @@ func runTest(h *harness, config *E2EConfig, addresses [][]byte) []error {
 	//limiter := rate.NewLimiter(rate.Limit(config.txPerMin/60.0), 1)
 	txBurst := int(config.txBurstCount)
 	intervalMillis := time.Duration(config.intervalBetweenBurstsMillis) * time.Millisecond
-	fmt.Printf("BURST=%d SLEEP=%s NTH=%d ADDRESSES=%d TO_URL=%s\n", txBurst, intervalMillis, config.metricsEveryNth, len(addresses), h.client.Endpoint)
+	fmt.Printf("BURST=%d SLEEP=%s NTH=%d ADDRESSES=%d TO_URL=%s OWNER_PK=%s\n",
+		txBurst,
+		intervalMillis,
+		config.metricsEveryNth,
+		len(addresses),
+		h.client.Endpoint,
+		OwnerOfAllSupply.PrivateKeyHex())
 	var i uint64
 	for {
 		for j := 0; j < txBurst; j++ {
