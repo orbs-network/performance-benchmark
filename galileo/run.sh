@@ -1,12 +1,15 @@
 #!/bin/bash
 
 # Config for stability network
-export VCHAIN=1000
-export API_ENDPOINT=${API_ENDPOINT-http://35.177.173.249/vchains/${VCHAIN}/api/v1/}
+export VCHAIN=${VCHAIN-2000}
+#export API_ENDPOINT=${API_ENDPOINT-http://35.177.173.249/vchains/${VCHAIN}/api/v1/}
+export GATEWAY_IP=35.177.173.249
 export TX_BURST_COUNT=500
 export INTERVAL_BETWEEN_BURSTS_MILLIS=60000
 export STRESS_TEST_METRICS_EVERY_NTH_TRANSACTION=5000
 #export REELECT_EVERY_MILLIS=60000
+
+export ETHEREUM_ENDPOINT=${ETHEREUM_ENDPOINT-http://127.0.0.1:8545}
 
 # Config for validators network
 # export VCHAIN=2019
@@ -22,7 +25,7 @@ DATE=$(date +%Y-%m-%d-%H%M%S)
 export RESULTS=${RESULTS-results/$COMMIT/$DATE}
 
 # !!This is used only for collecting metrics, it does not affect which IPs are on the network (every node has a static list of its peers)!!
-export STRESS_TEST_ALL_NODE_IPS="52.214.118.59 35.177.173.249 52.47.211.186 35.174.231.96 18.191.62.179 52.60.152.22 18.195.172.240"
+#export STRESS_TEST_ALL_NODE_IPS="52.214.118.59 35.177.173.249 52.47.211.186 35.174.231.96 18.191.62.179 52.60.152.22 18.195.172.240"
 
 export LOG_FILE="stability-${DATE}.log"
 

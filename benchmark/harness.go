@@ -24,7 +24,7 @@ type harness struct {
 func newHarness(config *E2EConfig) *harness {
 	return &harness{
 		config:         config,
-		client:         orbsClient.NewClient(getConfig().baseUrl, config.vchainId, codec.NETWORK_TYPE_TEST_NET),
+		client:         orbsClient.NewClient(baseUrlEndpoint(config.gatewayIP, config.vchainId), config.vchainId, codec.NETWORK_TYPE_TEST_NET),
 		reelectionDue:  false,
 		nextReelection: time.Now(),
 	}
@@ -85,19 +85,18 @@ func (h *harness) getTransactionReceiptProof(txId string) (response *codec.GetTr
 	return
 }
 
-func (h *harness) absoluteUrlFor(endpoint string) string {
-	return getConfig().baseUrl + endpoint
+func baseUrlEndpoint(ip string, vchain uint32) string {
+	return fmt.Sprintf("http://%s/vchains/%d", ip, vchain)
 }
 
-func (h *harness) metricsEndpoint(ip string) string {
-	vchainIdStr := fmt.Sprintf("%d", h.config.vchainId)
-	return "http://" + ip + "/vchains/" + vchainIdStr + "/metrics"
+func metricsEndpoint(ip string, vchain uint32) string {
+	return fmt.Sprintf("http://%s/vchains/%d/metrics", ip, vchain)
 }
 
 type metrics map[string]map[string]interface{}
 
 func (h *harness) getMetricsFromMainNode() metrics {
-	return h.getMetrics(h.absoluteUrlFor("/metrics"))
+	return h.getMetrics(metricsEndpoint(h.config.gatewayIP, h.config.vchainId))
 }
 
 func (h *harness) getMetrics(metricsUrl string) metrics {

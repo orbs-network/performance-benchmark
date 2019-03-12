@@ -40,7 +40,7 @@ func runTest(h *harness, config *E2EConfig, addresses [][]byte) []error {
 	//limiter := rate.NewLimiter(rate.Limit(config.txPerMin/60.0), 1)
 	txBurst := int(config.txBurstCount)
 	intervalMillis := time.Duration(config.intervalBetweenBurstsMillis) * time.Millisecond
-	fmt.Printf("BURST=%d SLEEP=%s NTH=%d ADDRESSES=%d\n", txBurst, intervalMillis, config.metricsEveryNth, len(addresses))
+	fmt.Printf("BURST=%d SLEEP=%s NTH=%d ADDRESSES=%d TO_URL=%s\n", txBurst, intervalMillis, config.metricsEveryNth, len(addresses), h.client.Endpoint)
 	var i uint64
 	for {
 		for j := 0; j < txBurst; j++ {
@@ -94,7 +94,7 @@ func maybeReelectCommittee(h *harness, committeeSize int) {
 
 func printStats(h *harness, idx uint64) {
 	for _, nodeIP := range h.config.allNodeIps {
-		m := h.getMetrics(h.metricsEndpoint(nodeIP))
+		m := h.getMetrics(metricsEndpoint(nodeIP, h.config.vchainId))
 		printStatsFromMetrics(nodeIP, h.config, m, idx)
 	}
 	fmt.Println()
@@ -107,12 +107,12 @@ func printStatsFromMetrics(nodeIP string, cfg *E2EConfig, m metrics, idx uint64)
 	} else {
 		version = m["Version.Commit"]["Value"].(string)[:8]
 	}
-	return fmt.Printf("=STATS= %s Ver=%s IP=%s txTotal=%d RateTxMin=%.0f currentTxIdx=%d Node=%s H=%.0f PApiTxMaxMs=%.0f PApiTxP99Ms=%.0f SinceLastCommitMs=%.0f CommittedPoolTx=%.0f PendingPoolTx=%.0f TimeInPendingMax=%0.f TimeInPendingP99=%0.f StateKeys=%.0f BlockSyncCommittedBlocks=%.0f HeapAllocMb=%.0f Goroutines=%.0f\n",
+	return fmt.Printf("=STATS= %s Ver=%s IP=%s txTotal=%d RateTxMin=%d currentTxIdx=%d Node=%s H=%.0f PApiTxMaxMs=%.0f PApiTxP99Ms=%.0f SinceLastCommitMs=%.0f CommittedPoolTx=%.0f PendingPoolTx=%.0f TimeInPendingMax=%0.f TimeInPendingP99=%0.f StateKeys=%.0f BlockSyncCommittedBlocks=%.0f HeapAllocMb=%.0f Goroutines=%.0f\n",
 		time.Now().UTC().Format(TIMESTAMP_FORMAT),
 		version,
 		nodeIP,
 		cfg.numberOfTransactions,
-		cfg.txPerMin,
+		cfg.txBurstCount/(cfg.intervalBetweenBurstsMillis/1000),
 		idx,
 		m["Node.Address"]["Value"],
 		m["BlockStorage.BlockHeight"]["Value"],
