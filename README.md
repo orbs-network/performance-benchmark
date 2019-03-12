@@ -87,7 +87,33 @@ How to combine the multiple KPIs? Limit (2) and (3) to reasonable values (eg. 95
 5. Stop the scenario once we have enough stable measurements
 
 
-## TBD Technical
+## StabilityNet user guide
+
+The Stability network lets us test a long running network. 
+Each node exposes JSON metrics with the `/metrics` endpoint, and prints out metrics and errors to logs.
+It can optionally print out all logs for the purpose of debugging.  
+
+### Metrics
+* Accessible on `http://<ip>/vchains/<vchain_id>/metrics` endpoint
+
+#### Metrics collector
+We use a custom metrics collector, see repo `https://github.com/orbs-network/metrics-processor`
+The metrics collector asks metrics from every node every 20 seconds, aggregates the data and sends to Geckoboard.
+The IP addresses of the nodes are available from an environment variable.
+It is written in Node.js.
+
+#### Dashboard
+We presently use Geckoboard, this is subject to change.
+
+### Logging
+* Enable logs: curl -XPOST http://<ip>/vchains/<vchain_id>/debug/logs/filter-off
+* Disable logs: curl -XPOST http://<ip>/vchains/<vchain_id>/debug/logs/filter-off
+Logs should not be enabled for long, as they are very verbose.
+
+Logs are sent to logz.io
+#### Logz.io configuration
+TBD how to send there logs 
+
 
 ### IP Addresses of the nodes (topology)
 The IP addresses for the nodes is stored in the file `/opt/galileo/testnet-configuration/benchmark/ips.json` on the client machine.
