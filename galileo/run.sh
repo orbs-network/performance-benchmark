@@ -22,7 +22,7 @@ DATE=$(date +%Y-%m-%d-%H%M%S)
 export RESULTS=${RESULTS-results/$COMMIT/$DATE}
 
 # !!This is used only for collecting metrics, it does not affect which IPs are on the network (every node has a static list of its peers)!!
-export STRESS_TEST_ALL_NODE_IPS="54.194.120.89 35.177.173.249 52.47.211.186 35.174.231.96 18.191.62.179 52.60.152.22 18.195.172.240"
+export STRESS_TEST_ALL_NODE_IPS="52.214.118.59 35.177.173.249 52.47.211.186 35.174.231.96 18.191.62.179 52.60.152.22 18.195.172.240"
 
 export LOG_FILE="stability-${DATE}.log"
 
