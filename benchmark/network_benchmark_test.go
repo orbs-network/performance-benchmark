@@ -184,14 +184,15 @@ func TestStability(t *testing.T) {
 		return
 	}
 
-	baseTxCount := getTransactionCount(t, h)
-
 	t.Logf("===== Test start ===== txCount=%d txPerMin=%.0f addressesCount=%d\n",
 		config.numberOfTransactions, config.txPerMin, len(addresses))
 	//fastRate := rate.NewLimiter(1000, 50)
 
 	errors := runTest(h, config, addresses)
 
+	t.Logf("===== Test Completed =====")
+
+	baseTxCount := getTransactionCount(t, h)
 	txCount := getTransactionCount(t, h) - baseTxCount
 	expectedNumberOfTx := float64(100-config.acceptableFailureRate) / 100 * float64(config.numberOfTransactions)
 	fmt.Printf("Successfully processed %.0f%% of %d transactions\n", txCount/float64(config.numberOfTransactions)*100, config.numberOfTransactions)
