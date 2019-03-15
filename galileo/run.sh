@@ -45,15 +45,11 @@ mkdir -p $RESULTS
 echo
 echo "===== STARTING TO RUN ${STRESS_TEST_NUMBER_OF_TRANSACTIONS} TRANSACTIONS ====="
 echo
-echo "To follow progress, run: tail -f ${LOG_FILE}"
-echo
 
 go test ./../benchmark/... -run TestStability -tags unsafetests -timeout 100000m -count 1 -v > ${LOG_FILE} &  CMDPID=$!
 echo
 echo "Started process ID $CMDPID. To stop it, run:"
 echo "kill $CMDPID"
 echo
-echo "Tailing the log file, you can safely stop it with ^C."
-echo "Process $CMDPID will continue in the background"
+echo "To follow progress, run:  tail -f ${LOG_FILE}"
 echo
-tail -f ${LOG_FILE}

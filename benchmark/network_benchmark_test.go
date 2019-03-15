@@ -89,6 +89,10 @@ func maybeReelectCommittee(h *harness, committeeSize int) {
 		elected := calcElected(committeeSize, len(StabilityNodeAddresses))
 		fmt.Printf("== %s Reelecting committee indices %v on vchain %d. Next reelection on %s\n",
 			now.UTC().Format(TIMESTAMP_FORMAT), elected, h.client.VirtualChainId, h.nextReelection.UTC().Format(TIMESTAMP_FORMAT))
+		if len(elected) < 4 {
+			fmt.Println("MUST NOT SEND LESS THAN 4 !!! SKIPPING")
+			return
+		}
 		err := h._unsafe_SetElectedValidators(OwnerOfAllSupply.PublicKey(), OwnerOfAllSupply.PrivateKey(), elected)
 		if err != nil {
 			fmt.Printf("Error electing %v, next in %s", elected, h.nextReelection)
