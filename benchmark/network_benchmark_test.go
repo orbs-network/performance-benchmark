@@ -81,14 +81,18 @@ func runTest(h *harness, config *E2EConfig, addresses [][]byte) []error {
 	return errors
 }
 
-func maybeReelectCommittee(h *harness, committeeSize int) {
+func maybeReelectCommittee(h *harness, committeeSize int, maxSize int) {
 	now := time.Now()
 	fmt.Printf("=%s Reelect?=\n", now.UTC().Format(TIMESTAMP_FORMAT))
 	if now.After(h.nextReelection) {
 		h.nextReelection = now.Add(REELECTION_INTERVAL)
 		elected := calcElected(committeeSize, len(StabilityNodeAddresses))
-		fmt.Printf("== %s Reelecting committee indices %v on vchain %d. Next reelection on %s\n",
-			now.UTC().Format(TIMESTAMP_FORMAT), elected, h.client.VirtualChainId, h.nextReelection.UTC().Format(TIMESTAMP_FORMAT))
+		fmt.Printf("== %s Reelecting committee indices %v out of %d on vchain %d. Next reelection on %s\n",
+			now.UTC().Format(TIMESTAMP_FORMAT),
+			elected,
+			maxSize,
+			h.client.VirtualChainId,
+			h.nextReelection.UTC().Format(TIMESTAMP_FORMAT))
 		if len(elected) < 4 {
 			fmt.Println("MUST NOT SEND LESS THAN 4 !!! SKIPPING")
 			return
@@ -172,7 +176,7 @@ func TestPeriodicReelection(t *testing.T) {
 
 	for {
 		committeeSize := minSize + rand.Intn(maxSize-minSize)
-		maybeReelectCommittee(h, committeeSize)
+		maybeReelectCommittee(h, committeeSize, maxSize)
 		time.Sleep(interval)
 	}
 }
