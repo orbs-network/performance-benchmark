@@ -169,7 +169,7 @@ func TestPeriodicReelection(t *testing.T) {
 	interval := 1 * time.Minute
 	rand.Seed(time.Now().UnixNano())
 	minSize := 4
-	maxSize := 7
+	maxSize := len(StabilityNodeAddresses)
 
 	t.Logf("===== TestPeriodicReelection start ===== checkInterval=%s reelectInterval=%s committeeSize Min=%d Max=%d\n",
 		interval, REELECTION_INTERVAL, minSize, maxSize)
