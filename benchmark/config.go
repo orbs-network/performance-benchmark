@@ -22,7 +22,6 @@ type StressTestConfig struct {
 	numberOfTransactions        uint64
 	acceptableFailureRate       uint64
 	targetTPS                   float64
-	txPerMin                    float64
 	metricsEveryNth             uint64
 	txBurstCount                uint64
 	intervalBetweenBurstsMillis uint64
@@ -43,7 +42,6 @@ func getConfig() *E2EConfig {
 	//baseUrl := "http://localhost:8080"
 
 	stressTestNumberOfTransactions := uint64(1000000000)
-	stressTestTransactionsPerMinute := float64(240)
 	stressTestFailureRate := uint64(20)
 	stressTestTargetTPS := float64(20)
 	stressTestMetricsEveryNthTransaction := uint64(100)
@@ -52,7 +50,7 @@ func getConfig() *E2EConfig {
 	stressTestIntervalBetweenBurstsMillis := uint64(300000)
 
 	undefinedVars := make([]string, 0)
-	for _, envVar := range []string{"NODE_IPS", "VCHAIN", "TX_BURST_COUNT", "INTERVAL_BETWEEN_BURSTS_MILLIS", "GATEWAY_IP"} {
+	for _, envVar := range []string{"NODE_IPS", "VCHAIN", "TX_BURST_COUNT", "INTERVAL_BETWEEN_BURSTS_MILLIS", "METRICS_EVERY_NTH_TX", "GATEWAY_IP"} {
 		if os.Getenv(envVar) == "" {
 			undefinedVars = append(undefinedVars, envVar)
 		}
@@ -83,7 +81,7 @@ func getConfig() *E2EConfig {
 		stressTestNumberOfTransactions = numTx
 	}
 
-	if metricsEveryNth, err := strconv.ParseUint(os.Getenv("STRESS_TEST_METRICS_EVERY_NTH_TRANSACTION"), 10, 0); err == nil {
+	if metricsEveryNth, err := strconv.ParseUint(os.Getenv("METRICS_EVERY_NTH_TX"), 10, 0); err == nil {
 		stressTestMetricsEveryNthTransaction = uint64(metricsEveryNth)
 	}
 	if failRate, err := strconv.ParseUint(os.Getenv("STRESS_TEST_FAILURE_RATE"), 10, 0); err == nil {
@@ -110,7 +108,6 @@ func getConfig() *E2EConfig {
 			numberOfTransactions:        stressTestNumberOfTransactions,
 			acceptableFailureRate:       stressTestFailureRate,
 			targetTPS:                   stressTestTargetTPS,
-			txPerMin:                    stressTestTransactionsPerMinute,
 			metricsEveryNth:             stressTestMetricsEveryNthTransaction,
 			txBurstCount:                stressTestTxBurstCount,
 			intervalBetweenBurstsMillis: stressTestIntervalBetweenBurstsMillis,

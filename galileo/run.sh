@@ -1,12 +1,13 @@
 #!/bin/bash
 
 # Config for stability network
-export VCHAIN=${VCHAIN-2000}
+export VCHAIN=${VCHAIN-2001}
 export GATEWAY_IP=${GATEWAY_IP-35.177.173.249}
 export TX_BURST_COUNT=${TX_BURST_COUNT-500}
 export INTERVAL_BETWEEN_BURSTS_MILLIS=${INTERVAL_BETWEEN_BURSTS_MILLIS-60000}
-export STRESS_TEST_METRICS_EVERY_NTH_TRANSACTION=${STRESS_TEST_METRICS_EVERY_NTH_TRANSACTION-5000}
+export METRICS_EVERY_NTH_TX=${METRICS_EVERY_NTH_TX-5000}
 export ETHEREUM_ENDPOINT=${ETHEREUM_ENDPOINT-http://127.0.0.1:8545}
+
 
 # Config for validators network
 # export VCHAIN=2019
@@ -43,7 +44,7 @@ echo "GATEWAY_IP=${GATEWAY_IP}"
 mkdir -p $RESULTS
 
 echo
-echo "===== STARTING TO RUN ${STRESS_TEST_NUMBER_OF_TRANSACTIONS} TRANSACTIONS ====="
+echo "===== STARTING TO RUN BURST=${TX_BURST_COUNT} INTERVAL=${INTERVAL_BETWEEN_BURSTS_MILLIS} NTH=${METRICS_EVERY_NTH_TX} ====="
 echo
 
 go test ./../benchmark/... -run TestStability -tags unsafetests -timeout 100000m -count 1 -v > ${LOG_FILE} &  CMDPID=$!
@@ -51,5 +52,8 @@ echo
 echo "Started process ID $CMDPID. To stop it, run:"
 echo "kill $CMDPID"
 echo
-echo "To follow progress, run:  tail -f ${LOG_FILE}"
+echo "To follow progress, run:"
+echo
+echo "tail -100f ${LOG_FILE}"
+echo
 echo

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/stretchr/testify/require"
 	"math/rand"
+	"os"
 	"sync"
 	"testing"
 	"time"
@@ -26,8 +27,8 @@ func getTransactionCount(t *testing.T, h *harness) float64 {
 func groupErrors(errors []error) map[string]int {
 	groupedErrors := make(map[string]int)
 
-	for _, error := range errors {
-		groupedErrors[error.Error()]++
+	for _, err := range errors {
+		groupedErrors[err.Error()]++
 	}
 
 	return groupedErrors
@@ -37,7 +38,6 @@ func runTest(h *harness, config *E2EConfig, addresses [][]byte) []error {
 	ctrlRand := rand.New(rand.NewSource(0))
 	var errors []error
 	var wg sync.WaitGroup
-	//limiter := rate.NewLimiter(rate.Limit(config.txPerMin/60.0), 1)
 	txBurst := int(config.txBurstCount)
 	intervalMillis := time.Duration(config.intervalBetweenBurstsMillis) * time.Millisecond
 	fmt.Printf("BURST=%d SLEEP=%s NTH=%d ADDRESSES=%d TO_URL=%s OWNER_PK=%s\n",
@@ -114,31 +114,23 @@ func printStats(h *harness, idx uint64) {
 	fmt.Println()
 }
 
-func printStatsFromMetrics(nodeIP string, cfg *E2EConfig, m metrics, idx uint64) (int, error) {
+func printStatsFromMetrics(nodeIP string, cfg *E2EConfig, m metrics, idx uint64) {
 	var version string
 	if m["Version.Commit"]["Value"] == nil {
 		version = "NA"
 	} else {
 		version = m["Version.Commit"]["Value"].(string)[:8]
 	}
-	return fmt.Printf("=STATS= %s Ver=%s IP=%s txTotal=%d RateTxMin=%d currentTxIdx=%d Node=%s H=%.0f PApiTxMaxMs=%.0f PApiTxP99Ms=%.0f SinceLastCommitMs=%.0f CommittedPoolTx=%.0f PendingPoolTx=%.0f TimeInPendingMax=%0.f TimeInPendingP99=%0.f StateKeys=%.0f BlockSyncCommittedBlocks=%.0f HeapAllocMb=%.0f Goroutines=%.0f\n",
+	fmt.Printf("=STATS= %s PID=%d Ver=%s IP=%s RateTxMin=%d txIdx=%d Node=%s H=%.0f StateKeys=%.0f HeapAllocMb=%.0f Goroutines=%.0f\n",
 		time.Now().UTC().Format(TIMESTAMP_FORMAT),
+		os.Getpid(),
 		version,
 		nodeIP,
-		cfg.numberOfTransactions,
 		cfg.txBurstCount/(cfg.intervalBetweenBurstsMillis/1000),
 		idx,
 		m["Node.Address"]["Value"],
 		m["BlockStorage.BlockHeight"]["Value"],
-		m["PublicApi.SendTransactionProcessingTime.Millis"]["Max"],
-		m["PublicApi.SendTransactionProcessingTime.Millis"]["P99"],
-		m["ConsensusAlgo.LeanHelix.TimeSinceLastCommit.Millis"]["Max"],
-		m["TransactionPool.CommittedPool.Transactions.Count"]["Value"],
-		m["TransactionPool.PendingPool.Transactions.Count"]["Value"],
-		m["TransactionPool.PendingPool.TimeSpentInQueue.Millis"]["Max"],
-		m["TransactionPool.PendingPool.TimeSpentInQueue.Millis"]["P99"],
 		m["StateStoragePersistence.TotalNumberOfKeys.Count"]["Value"],
-		m["BlockSync.ProcessingBlocksState.CommittedBlocks.Count"]["Value"],
 		m["Runtime.HeapAlloc.Bytes"]["Value"],
 		m["Runtime.NumGoroutine.Value"]["Value"],
 	)
@@ -192,8 +184,8 @@ func TestStability(t *testing.T) {
 		return
 	}
 
-	t.Logf("===== Test start ===== txCount=%d txPerMin=%.0f addressesCount=%d\n",
-		config.numberOfTransactions, config.txPerMin, len(addresses))
+	t.Logf("===== Test start ===== txCount=%d burst=%d interval=%v addressesCount=%d\n",
+		config.numberOfTransactions, config.txBurstCount, config.intervalBetweenBurstsMillis, len(addresses))
 	//fastRate := rate.NewLimiter(1000, 50)
 
 	errors := runTest(h, config, addresses)
