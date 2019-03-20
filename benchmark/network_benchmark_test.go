@@ -132,7 +132,7 @@ func printStatsFromMetrics(nodeIP string, cfg *E2EConfig, m metrics, idx uint64)
 		m["BlockStorage.BlockHeight"]["Value"],
 		m["StateStoragePersistence.TotalNumberOfKeys.Count"]["Value"],
 		m["Runtime.HeapAlloc.Bytes"]["Value"],
-		m["Runtime.NumGoroutine.Value"]["Value"],
+		m["Runtime.NumGoroutine.Number"]["Value"],
 	)
 }
 
