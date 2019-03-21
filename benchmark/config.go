@@ -12,6 +12,7 @@ type E2EConfig struct {
 	vchainId uint32
 	//baseUrl          string
 	gatewayIP        string
+	netConfig        *nodeConfiguration
 	ethereumEndpoint string
 
 	StressTestConfig
@@ -50,7 +51,7 @@ func getConfig() *E2EConfig {
 	stressTestIntervalBetweenBurstsMillis := uint64(300000)
 
 	undefinedVars := make([]string, 0)
-	for _, envVar := range []string{"NODE_IPS", "VCHAIN", "TX_BURST_COUNT", "INTERVAL_BETWEEN_BURSTS_MILLIS", "METRICS_EVERY_NTH_TX", "GATEWAY_IP"} {
+	for _, envVar := range []string{"NODE_IPS", "VCHAIN", "TX_BURST_COUNT", "INTERVAL_BETWEEN_BURSTS_MILLIS", "METRICS_EVERY_NTH_TX", "GATEWAY_IP", "NET_CONFIG_URL"} {
 		if os.Getenv(envVar) == "" {
 			undefinedVars = append(undefinedVars, envVar)
 		}
@@ -96,11 +97,18 @@ func getConfig() *E2EConfig {
 	if len(allNodeIpsStr) < 4 {
 		panic("Must define at least 4 nodes in NODE_IPS environment variable (comma-separated list of IPs)")
 	}
+
+	netConfig, err := ReadUrlConfig(os.Getenv("NET_CONFIG_URL"))
+	if err != nil {
+		panic(fmt.Sprintf("Failed parsing file NET_CONFIG_URL=%s", os.Getenv("NET_CONFIG_URL")))
+	}
+
 	allNodeIps := strings.Split(allNodeIpsStr, ",")
 
 	return &E2EConfig{
 		vchainId,
 		gatewayIP,
+		netConfig,
 		ethereumEndpoint,
 
 		StressTestConfig{

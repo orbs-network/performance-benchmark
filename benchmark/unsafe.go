@@ -29,7 +29,7 @@ func createPayloadForUnsafeTestsSetElectedValidators(electedValidatorIndexes []i
 // Determined by VCHAIN environment variable
 func (h *harness) _unsafe_SetElectedValidators(senderPublicKey []byte, senderPrivateKey []byte, electedValidatorIndexes []int) error {
 	payload := createPayloadForUnsafeTestsSetElectedValidators(electedValidatorIndexes)
-	res, _, err := h.sendTransaction(OwnerOfAllSupply.PublicKey(), OwnerOfAllSupply.PrivateKey(), "_Elections", "unsafetests_setElectedValidators", payload)
+	res, _, err := h.sendTransaction(0, OwnerOfAllSupply.PublicKey(), OwnerOfAllSupply.PrivateKey(), "_Elections", "unsafetests_setElectedValidators", payload)
 	if err != nil {
 		return errors.Wrapf(err, "UnsafeTests_SetElectedValidators() Result: %v", res)
 	}

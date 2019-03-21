@@ -16,15 +16,22 @@ import (
 
 type harness struct {
 	config         *E2EConfig
-	client         *orbsClient.OrbsClient
+	clients        []*orbsClient.OrbsClient
 	reelectionDue  bool
 	nextReelection time.Time
 }
 
 func newHarness(config *E2EConfig) *harness {
+
+	clients := make([]*orbsClient.OrbsClient, 0)
+	for i := 0; i < len(config.netConfig.ValidatorNodes); i++ {
+		client := orbsClient.NewClient(baseUrlEndpoint(config.netConfig.ValidatorNodes[i].IP, config.vchainId), config.vchainId, codec.NETWORK_TYPE_TEST_NET)
+		clients = append(clients, client)
+	}
+
 	return &harness{
 		config:         config,
-		client:         orbsClient.NewClient(baseUrlEndpoint(config.gatewayIP, config.vchainId), config.vchainId, codec.NETWORK_TYPE_TEST_NET),
+		clients:        clients,
 		reelectionDue:  false,
 		nextReelection: time.Now(),
 	}
@@ -33,7 +40,7 @@ func newHarness(config *E2EConfig) *harness {
 func (h *harness) deployNativeContract(from *keys.Ed25519KeyPair, contractName string, code []byte) (codec.ExecutionResult, codec.TransactionStatus, error) {
 	timeoutDuration := 10 * time.Second
 	beginTime := time.Now()
-	sendTxOut, txId, err := h.sendTransaction(from.PublicKey(), from.PrivateKey(), "_Deployments", "deployService", contractName, uint32(PROCESSOR_TYPE_NATIVE), code)
+	sendTxOut, txId, err := h.sendTransaction(0, from.PublicKey(), from.PrivateKey(), "_Deployments", "deployService", contractName, uint32(PROCESSOR_TYPE_NATIVE), code)
 	if err != nil {
 		return "", "", errors.Wrap(err, "failed to deploy native contract")
 	}
@@ -48,7 +55,7 @@ func (h *harness) deployNativeContract(from *keys.Ed25519KeyPair, contractName s
 
 		time.Sleep(10 * time.Millisecond)
 
-		txStatusOut, _ := h.getTransactionStatus(txId)
+		txStatusOut, _ := h.getTransactionStatus(0, txId)
 
 		txStatus, executionResult = txStatusOut.TransactionStatus, txStatusOut.ExecutionResult
 	}
@@ -57,31 +64,35 @@ func (h *harness) deployNativeContract(from *keys.Ed25519KeyPair, contractName s
 }
 
 // This sends to vchain as defined in VCHAIN environment variable
-func (h *harness) sendTransaction(senderPublicKey []byte, senderPrivateKey []byte, contractName string, methodName string, args ...interface{}) (response *codec.SendTransactionResponse, txId string, err error) {
-	payload, txId, err := h.client.CreateTransaction(senderPublicKey, senderPrivateKey, contractName, methodName, args...)
+func (h *harness) sendTransaction(clientIdx int, senderPublicKey []byte, senderPrivateKey []byte, contractName string, methodName string, args ...interface{}) (response *codec.SendTransactionResponse, txId string, err error) {
+	client := h.clients[clientIdx]
+	payload, txId, err := client.CreateTransaction(senderPublicKey, senderPrivateKey, contractName, methodName, args...)
 	if err != nil {
 		return nil, txId, err
 	}
-	response, err = h.client.SendTransaction(payload)
+	response, err = client.SendTransaction(payload)
 	return
 }
 
-func (h *harness) runQuery(senderPublicKey []byte, contractName string, methodName string, args ...interface{}) (response *codec.RunQueryResponse, err error) {
-	payload, err := h.client.CreateQuery(senderPublicKey, contractName, methodName, args...)
+func (h *harness) runQuery(clientIdx int, senderPublicKey []byte, contractName string, methodName string, args ...interface{}) (response *codec.RunQueryResponse, err error) {
+	client := h.clients[clientIdx]
+	payload, err := client.CreateQuery(senderPublicKey, contractName, methodName, args...)
 	if err != nil {
 		return nil, err
 	}
-	response, err = h.client.SendQuery(payload)
+	response, err = client.SendQuery(payload)
 	return
 }
 
-func (h *harness) getTransactionStatus(txId string) (response *codec.GetTransactionStatusResponse, err error) {
-	response, err = h.client.GetTransactionStatus(txId)
+func (h *harness) getTransactionStatus(clientIdx int, txId string) (response *codec.GetTransactionStatusResponse, err error) {
+	client := h.clients[clientIdx]
+	response, err = client.GetTransactionStatus(txId)
 	return
 }
 
-func (h *harness) getTransactionReceiptProof(txId string) (response *codec.GetTransactionReceiptProofResponse, err error) {
-	response, err = h.client.GetTransactionReceiptProof(txId)
+func (h *harness) getTransactionReceiptProof(clientIdx int, txId string) (response *codec.GetTransactionReceiptProofResponse, err error) {
+	client := h.clients[clientIdx]
+	response, err = client.GetTransactionReceiptProof(txId)
 	return
 }
 

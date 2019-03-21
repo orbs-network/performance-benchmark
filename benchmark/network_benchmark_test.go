@@ -38,14 +38,16 @@ func runTest(h *harness, config *E2EConfig, addresses [][]byte) []error {
 	ctrlRand := rand.New(rand.NewSource(0))
 	var errors []error
 	var wg sync.WaitGroup
+	clientsCount := len(h.clients)
 	txBurst := int(config.txBurstCount)
 	intervalMillis := time.Duration(config.intervalBetweenBurstsMillis) * time.Millisecond
-	fmt.Printf("BURST=%d SLEEP=%s NTH=%d ADDRESSES=%d TO_URL=%s OWNER_PK=%s\n",
+	fmt.Printf("BURST=%d SLEEP=%s NTH=%d ADDRESSES=%d NODE_COUNT=%d FIRST_NODE=%s OWNER_PK=%s\n",
 		txBurst,
 		intervalMillis,
 		config.metricsEveryNth,
 		len(addresses),
-		h.client.Endpoint,
+		clientsCount,
+		h.clients[0].Endpoint,
 		OwnerOfAllSupply.PrivateKeyHex())
 	var i uint64
 	for {
@@ -63,7 +65,9 @@ func runTest(h *harness, config *E2EConfig, addresses [][]byte) []error {
 				addrIndex := ctrlRand.Intn(len(addresses))
 				target := addresses[addrIndex]
 				//fmt.Printf("Transfer %d to address_idx #%d=%s\n", amount, addrIndex, encoding.EncodeHex(target))
-				_, _, err2 := h.sendTransaction(OwnerOfAllSupply.PublicKey(), OwnerOfAllSupply.PrivateKey(), "BenchmarkToken", "transfer", uint64(amount), target)
+				clientIdx := ctrlRand.Intn(clientsCount)
+				//fmt.Printf("Calling client idx=%d\n", clientIdx)
+				_, _, err2 := h.sendTransaction(clientIdx, OwnerOfAllSupply.PublicKey(), OwnerOfAllSupply.PrivateKey(), "BenchmarkToken", "transfer", uint64(amount), target)
 				if err2 != nil {
 					errors = append(errors, err2)
 				}
@@ -91,7 +95,7 @@ func maybeReelectCommittee(h *harness, committeeSize int, maxSize int) {
 			now.UTC().Format(TIMESTAMP_FORMAT),
 			elected,
 			maxSize,
-			h.client.VirtualChainId,
+			h.clients[0].VirtualChainId,
 			h.nextReelection.UTC().Format(TIMESTAMP_FORMAT))
 		if len(elected) < 4 {
 			fmt.Println("MUST NOT SEND LESS THAN 4 !!! SKIPPING")
