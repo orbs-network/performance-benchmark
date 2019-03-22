@@ -30,7 +30,7 @@ type StressTestConfig struct {
 
 const TIMESTAMP_FORMAT = "2006-01-02T15:04:05.000Z"
 
-const VIRTUAL_CHAIN_ID = uint32(2000)
+//const VIRTUAL_CHAIN_ID = uint32(2000)
 
 // "github.com/orbs-network/orbs-spec/types/go/protocol"
 const PROCESSOR_TYPE_NATIVE = 1
@@ -38,10 +38,6 @@ const PROCESSOR_TYPE_NATIVE = 1
 const REELECTION_INTERVAL = 10 * time.Minute
 
 func getConfig() *E2EConfig {
-	vchainId := VIRTUAL_CHAIN_ID
-	//baseUrl := "http://54.194.120.89:8080"
-	//baseUrl := "http://localhost:8080"
-
 	stressTestNumberOfTransactions := uint64(1000000000)
 	stressTestFailureRate := uint64(20)
 	stressTestTargetTPS := float64(20)
@@ -64,11 +60,11 @@ func getConfig() *E2EConfig {
 	gatewayIP := os.Getenv("GATEWAY_IP")
 	ethereumEndpoint := os.Getenv("ETHEREUM_ENDPOINT")
 
-	if vcid, err := strconv.ParseUint(os.Getenv("VCHAIN"), 10, 0); err == nil {
-		vchainId = uint32(vcid)
-	} else {
+	vcid, err := strconv.ParseUint(os.Getenv("VCHAIN"), 10, 0)
+	if err != nil || vcid == 0 {
 		panic("Environment variable VCHAIN must be a number")
 	}
+	vchainId := uint32(vcid)
 
 	if txBurstCount, err := strconv.ParseUint(os.Getenv("TX_BURST_COUNT"), 10, 0); err == nil {
 		stressTestTxBurstCount = txBurstCount
