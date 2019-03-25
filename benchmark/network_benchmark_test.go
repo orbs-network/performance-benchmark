@@ -91,8 +91,9 @@ func maybeReelectCommittee(h *harness, committeeSize int, maxSize int) {
 	if now.After(h.nextReelection) {
 		h.nextReelection = now.Add(REELECTION_INTERVAL)
 		elected := calcElected(committeeSize, len(StabilityNodeAddresses))
-		fmt.Printf("== %s Reelecting committee indices %v out of %d on vchain %d. Next reelection on %s\n",
+		fmt.Printf("== %s Reelecting committee indices %v %d out of %d on vchain %d. Next reelection on %s\n",
 			now.UTC().Format(TIMESTAMP_FORMAT),
+			len(elected),
 			elected,
 			maxSize,
 			h.clients[0].VirtualChainId,
