@@ -1,0 +1,156 @@
+{
+  "network": [
+    {
+      "address": "0xd5f2f401742568bcb6fc0fd54c2b2eb1b75f8556",
+      "ip": "18.197.127.2",
+      "node_name": "Orbs Audit",
+      "company_name": "Orbs",
+      "region": "eu-central-1",
+      "active": "false"
+    },
+    {
+      "address": "0x8A44E9c662dcF0677D529Ef3b000f29a8f741B60",
+      "ethereum_address": "0x86b234a86d57e707fbe1a406780941fdab6690a5",
+      "ip": "35.183.240.87",
+      "node_name": "stratx-orbs-prod",
+      "company_name": "StratX",
+      "region": "ca-central-1",
+      "active": "true"
+    },
+    {
+      "address": "0x718d4317e8d75f6494da9c8f7abb0554f58fafe4",
+      "ethereum_address": "0xc2212098ade1999aa66cae2fc9b398e87aa9643e",
+      "ip": "64.59.88.8",
+      "node_name": "tenta",
+      "company_name": "Tenta",
+      "region": "us-east-1",
+      "active": "true"
+    },
+    {
+      "address": "0x0874bc1383958e2475df73dc68c4f09658e23777",
+      "ethereum_address": "0x0874bc1383958e2475df73dc68c4f09658e23777",
+      "ip": "18.197.50.152",
+      "node_name": "Wings Stiftung",
+      "company_name": "Wings AI",
+      "region": "eu-central-1",
+      "active": "true"
+    },
+    {
+      "address": "0x6ea62E3Abd6Bdd597fE73002a30C29659D7fe88D",
+      "ethereum_address": "0xcCA877408c68878EA02Afd1C441cDaaA05d061f1",
+      "ip": "52.2.41.108",
+      "node_name": "chainvalid8-orbs-prod",
+      "company_name": "ChainValid8",
+      "region": "us-east-1",
+      "active": "true"
+    },
+    {
+      "address": "",
+      "ethereum_address": "",
+      "ip": "54.163.157.129",
+      "node_name": "PH Capital",
+      "company_name": "PH Capital",
+      "region": "us-east-1",
+      "active": "true"
+    },
+    {
+      "address": "0xE30A30069209aA4e7e7B07aB391966a0f071aFD9",
+      "ethereum_address": "0xeC5b553E964B0b720703EF80F0F36F0E5Ec3e61C",
+      "ip": "34.210.190.236",
+      "node_name": "80trill-orbs-prod",
+      "company_name": "80Trill",
+      "region": "us-west-2",
+      "active": "true"
+    },
+    {
+      "address": "0xF2D94675d9A10085fEb499359FcD42a2Dc16d62B",
+      "ethereum_address": "0x6aE3A277332606ae46bA194e3952b29C20302066",
+      "ip": "13.125.82.8",
+      "node_name": "fairsquarelab-orbs-prod",
+      "company_name": "Fair Square Labs",
+      "region": "ap-northeast-2",
+      "active": "true"
+    },
+    {
+      "address": "0x7a11b8f6E739CA74d7C4fe3B8a2a8D213D83e768",
+      "ethereum_address": "0xf7ae622C77D0580f02Bcb2f92380d61e3F6e466c",
+      "ip": "3.210.140.137",
+      "node_name": "idam-orbs-prod",
+      "company_name": "IDAM",
+      "region": "us-east-1",
+      "active": "true"
+    },
+    {
+      "address": "",
+      "ethereum_address": "",
+      "ip": "13.209.158.127",
+      "node_name": "BitGOSU",
+      "company_name": "BitGOSU",
+      "region": "",
+      "active": "true"
+    },
+    {
+      "address": "0xf19bafe71844282a88776f87496328de19658992",
+      "ethereum_address": "0x45636ccfbd84c2e6cd7a17722679456dad55d954",
+      "ip": "3.210.161.251",
+      "node_name": "dappsters-orbs-prod",
+      "company_name": "Dappsters",
+      "region": "",
+      "active": "true"
+    },
+    {
+      "address": "0x71CbE6F119d99C6CD5c1EC0eC59678F36F1Fed85",
+      "ethereum_address": "0xd5c78e498a1bf8d3fb88ba9a2dd71f6931c590d0",
+      "ip": "13.124.232.110",
+      "node_name": "validator1-orbs-prod",
+      "company_name": "Chain Partners",
+      "region": "ap-northeast-2",
+      "active": "true"
+    },
+    {
+      "address": "0x7Ab403dE6F3eD5d203932dD3DD5D0D5d86C66301",
+      "ethereum_address": "0x6fb0dfb34a659924f86eea133e726e82d7dd3b42",
+      "ip": "18.216.146.48",
+      "node_name": "pulse-lab-orbs-prod",
+      "company_name": "Pulse Lab",
+      "region": "us-east-2",
+      "active": "true"
+    },
+    {
+      "address": "0xB5651D9962c7757b26489e091Fe97F540E3edA6c",
+      "ethereum_address": "0xb8CA9EA80F51307A26f354B462FC226349505dAE",
+      "ip": "35.183.225.241",
+      "node_name": "paradigmfund-orbs-prod",
+      "company_name": "Paradigm Fund",
+      "region": "ca-central-1",
+      "active": "true"
+    },
+    {
+      "address": "",
+      "ethereum_address": "",
+      "ip": "13.230.247.180",
+      "node_name": "Koji",
+      "company_name": "Koji",
+      "region": "",
+      "active": "true"
+    },
+    {
+      "address": "",
+      "ethereum_address": "",
+      "ip": "",
+      "node_name": "Lemniscap",
+      "company_name": "Lemniscap",
+      "region": "",
+      "active": "false"
+    },
+    {
+      "address": "DUPLICATE THIS SECTION AND FILL IN THE DETAILS, THEN SET active=true",
+      "ethereum_address": "",
+      "ip": "",
+      "node_name": "",
+      "company_name": "",
+      "region": "",
+      "active": "false"
+    }
+  ]
+}

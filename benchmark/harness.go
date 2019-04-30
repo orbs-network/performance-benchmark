@@ -14,27 +14,57 @@ import (
 	"time"
 )
 
+const TEST_KEYS_FILENAME = "benchmark/addresses.json"
+
 type harness struct {
-	config         *E2EConfig
-	clients        []*orbsClient.OrbsClient
-	reelectionDue  bool
-	nextReelection time.Time
+	config           *E2EConfig
+	clients          []*orbsClient.OrbsClient
+	accountAddresses [][]byte
+	reelectionDue    bool
+	nextReelection   time.Time
 }
 
-func newHarness(config *E2EConfig) *harness {
+func NewHarness(config *E2EConfig) *harness {
 
 	clients := make([]*orbsClient.OrbsClient, 0)
 	for i := 0; i < len(config.netConfig.ValidatorNodes); i++ {
+		if !config.netConfig.ValidatorNodes[i].Active || len(config.netConfig.ValidatorNodes[i].IP) == 0 {
+			continue
+		}
 		client := orbsClient.NewClient(baseUrlEndpoint(config.netConfig.ValidatorNodes[i].IP, config.vchainId), config.vchainId, codec.NETWORK_TYPE_TEST_NET)
 		clients = append(clients, client)
+		fmt.Printf("Added client node: %s %s\n",
+			config.netConfig.ValidatorNodes[i].IP, config.netConfig.ValidatorNodes[i].Address)
+	}
+	fmt.Printf("Will send transactions to %d nodes\n", len(clients))
+
+	addresses := readAddressesFromFile(TEST_KEYS_FILENAME)
+	if addresses == nil {
+		fmt.Printf("Addresses not loaded, perhaps %s is not found", TEST_KEYS_FILENAME)
+		return nil
 	}
 
 	return &harness{
-		config:         config,
-		clients:        clients,
-		reelectionDue:  false,
-		nextReelection: time.Now(),
+		config:           config,
+		clients:          clients,
+		accountAddresses: addresses,
+		reelectionDue:    false,
+		nextReelection:   time.Now(),
 	}
+}
+
+func readAddressesFromFile(filename string) [][]byte {
+	keys := getTestKeysFromFile(filename)
+	if keys == nil {
+		return nil
+	}
+
+	addresses := make([][]byte, 0)
+	for _, key := range keys {
+		addresses = append(addresses, key.Address)
+		//fmt.Printf("Added to addresses array: %s\n", encoding.EncodeHex(key.Address))
+	}
+	return addresses
 }
 
 func (h *harness) deployNativeContract(from *keys.Ed25519KeyPair, contractName string, code []byte) (codec.ExecutionResult, codec.TransactionStatus, error) {

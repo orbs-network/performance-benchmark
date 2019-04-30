@@ -37,7 +37,32 @@ const PROCESSOR_TYPE_NATIVE = 1
 
 const REELECTION_INTERVAL = 10 * time.Minute
 
-func getConfig() *E2EConfig {
+func GetLoadRunnerConfig(vchain int64, tps uint64, cfgPath string) *E2EConfig {
+
+	// read cfg
+	netConfig, err := ReadFileConfig(cfgPath)
+	if err != nil {
+		panic(fmt.Sprintf("Failed parsing cfgPath=%s: %s", cfgPath, err))
+	}
+
+	return &E2EConfig{
+
+		vchainId:  uint32(vchain),
+		netConfig: netConfig,
+		StressTestConfig: StressTestConfig{
+			allNodeIps:                  nil,
+			numberOfTransactions:        1000000,
+			acceptableFailureRate:       0,
+			targetTPS:                   0,
+			metricsEveryNth:             5000,
+			txBurstCount:                tps,
+			intervalBetweenBurstsMillis: 1000,
+		},
+	}
+
+}
+
+func GetConfig() *E2EConfig {
 	stressTestNumberOfTransactions := uint64(1000000000)
 	stressTestFailureRate := uint64(20)
 	stressTestTargetTPS := float64(20)

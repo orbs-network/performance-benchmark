@@ -24,6 +24,16 @@ type VirtualChain struct {
 type ValidatorNode struct {
 	Address string `json:"address"`
 	IP      string `json:"ip"`
+	Active  bool   `json:"active,string"`
+}
+
+func ReadFileConfig(configPath string) (*nodeConfiguration, error) {
+	input, err := ioutil.ReadFile(configPath)
+	if err != nil {
+		return nil, fmt.Errorf("could not read configuration from source: %s", err)
+	}
+
+	return parseStringConfig(string(input))
 }
 
 func ReadUrlConfig(configUrl string) (*nodeConfiguration, error) {

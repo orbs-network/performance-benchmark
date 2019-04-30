@@ -8,11 +8,9 @@ import (
 	"io/ioutil"
 )
 
-const TEST_KEYS_FILENAME = "addresses.json"
 const KEY_COUNT = 100
 
-func commandGenerateTestKeys() int {
-	filename := TEST_KEYS_FILENAME
+func commandGenerateTestKeys(filename string) int {
 	keys := make(map[string]*jsoncodec.Key)
 	for i := 0; i < KEY_COUNT; i++ {
 		account, err := orbs.CreateAccount()
@@ -47,10 +45,9 @@ func commandGenerateTestKeys() int {
 	return KEY_COUNT
 }
 
-func getTestKeysFromFile() map[string]*jsoncodec.RawKey {
-	filename := TEST_KEYS_FILENAME
+func getTestKeysFromFile(filename string) map[string]*jsoncodec.RawKey {
 	if !doesFileExist(filename) {
-		return nil
+		die("Input file %s does not exist", filename)
 	}
 
 	bytes, err := ioutil.ReadFile(filename)
@@ -88,5 +85,6 @@ func getTestKeysFromFile() map[string]*jsoncodec.RawKey {
 			Address:    address,
 		}
 	}
+	fmt.Printf("Found %d addresses\n", len(all))
 	return all
 }
