@@ -24,7 +24,7 @@
       "node_name": "tenta",
       "company_name": "Tenta",
       "region": "us-east-1",
-      "active": "true"
+      "active": "false"
     },
     {
       "address": "0x0874bc1383958e2475df73dc68c4f09658e23777",
