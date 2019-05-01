@@ -4,9 +4,10 @@
 export INTERVAL_BETWEEN_BURSTS_MILLIS=${INTERVAL_BETWEEN_BURSTS_MILLIS-60000}
 export METRICS_EVERY_NTH_TX=${METRICS_EVERY_NTH_TX-5000}
 
-if [[ $# -ne 3 ]] ; then
+if [[ $# -ne 4 ]] ; then
     echo
-    echo "Usage: [VCHAIN] [TPS] [CFG_PATH]"
+    echo "Usage: <VCHAIN> <TPS> <CFG_PATH> <IS_ASYNC>"
+    echo "Example: 1 10 config/test-topology-same-region.json true"
     echo
     exit 1
 fi
@@ -19,10 +20,10 @@ export LOG_FILE="load-${VCHAIN}-${DATE}.log"
 mkdir -p ${RESULTS}
 
 echo
-echo "===== STARTING TO RUN VCHAIN=${1} TPS${2} PRINT_METRICS_EVERY_NTH_TX=${METRICS_EVERY_NTH_TX} CFG_PATH=${3} ====="
+echo "===== STARTING TO RUN VCHAIN=${1} TPS${2} PRINT_METRICS_EVERY_NTH_TX=${METRICS_EVERY_NTH_TX} CFG_PATH=${3} IS_ASYNC=${4}====="
 echo
 
-CMD="go run loadrunner/load_runner.go $1 $2 $3"
+CMD="go run loadrunner/load_runner.go $1 $2 $3 $4"
 
 echo "CMD=${CMD}"
 

@@ -26,6 +26,7 @@ type StressTestConfig struct {
 	metricsEveryNth             uint64
 	txBurstCount                uint64
 	intervalBetweenBurstsMillis uint64
+	isAsync                     bool
 }
 
 const TIMESTAMP_FORMAT = "2006-01-02T15:04:05.000Z"
@@ -37,7 +38,7 @@ const PROCESSOR_TYPE_NATIVE = 1
 
 const REELECTION_INTERVAL = 10 * time.Minute
 
-func GetLoadRunnerConfig(vchain int64, tps uint64, cfgPath string) *E2EConfig {
+func GetLoadRunnerConfig(vchain int64, tps uint64, cfgPath string, isAsync bool) *E2EConfig {
 
 	// read cfg
 	netConfig, err := ReadFileConfig(cfgPath)
@@ -57,6 +58,7 @@ func GetLoadRunnerConfig(vchain int64, tps uint64, cfgPath string) *E2EConfig {
 			metricsEveryNth:             5000,
 			txBurstCount:                tps,
 			intervalBetweenBurstsMillis: 1000,
+			isAsync:                     isAsync,
 		},
 	}
 

@@ -100,7 +100,14 @@ func (h *harness) sendTransaction(clientIdx int, senderPublicKey []byte, senderP
 	if err != nil {
 		return nil, txId, err
 	}
-	response, err = client.SendTransaction(payload)
+
+	var sendTransaction func(rawTransaction []byte) (response *codec.SendTransactionResponse, err error)
+	if h.config.isAsync {
+		sendTransaction = client.SendTransactionAsync
+	} else {
+		sendTransaction = client.SendTransaction
+	}
+	response, err = sendTransaction(payload)
 	return
 }
 

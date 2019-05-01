@@ -41,8 +41,9 @@ func RunLoad(h *harness, config *E2EConfig) []error {
 	clientsCount := len(h.clients)
 	txBurst := int(config.txBurstCount)
 	intervalMillis := time.Duration(config.intervalBetweenBurstsMillis) * time.Millisecond
-	fmt.Printf("VCHAIN=%d BURST=%d SLEEP=%s NTH=%d ADDRESSES=%d NODE_COUNT=%d FIRST_NODE=%s OWNER_PK=%s\n",
+	fmt.Printf("VCHAIN=%d ASYNC=%t BURST=%d SLEEP=%s NTH=%d ADDRESSES=%d NODE_COUNT=%d FIRST_NODE=%s OWNER_PK=%s\n",
 		config.vchainId,
+		config.isAsync,
 		txBurst,
 		intervalMillis,
 		config.metricsEveryNth,
