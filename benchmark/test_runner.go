@@ -74,7 +74,7 @@ func RunLoad(h *harness, config *E2EConfig) []error {
 				//fmt.Printf("Transfer %d to address_idx #%d=%s\n", amount, addrIndex, encoding.EncodeHex(target))
 				clientIdx := ctrlRand.Intn(clientsCount)
 				//fmt.Printf("Calling client idx=%d\n", clientIdx)
-				_, _, err2 := h.sendTransaction(clientIdx, OwnerOfAllSupply.PublicKey(), OwnerOfAllSupply.PrivateKey(), "BenchmarkToken", "transfer", uint64(amount), target)
+				_, _, err2 := h.sendTransaction(clientIdx, OwnerOfAllSupply.PublicKey(), OwnerOfAllSupply.PrivateKey(), "ResettableBenchmarkToken", "transfer", uint64(amount), target)
 				if err2 != nil {
 					fmt.Printf("Error sending tx to %s: %s\n", h.clients[clientIdx].Endpoint, err2)
 					errors = append(errors, err2)
