@@ -1,0 +1,38 @@
+{
+  "network": [
+    {
+      "address": "a328846cd5b4979d68a8c58a9bdfeee657b34de7",
+      "ip": "3.14.61.30",
+      "node_name": "Node1",
+      "region": "us-west-2",
+      "active": "true"
+    },
+    {
+      "address": "d27e2e7398e2582f63d0800330010b3e58952ff6",
+      "ip": "18.218.186.189",
+      "node_name": "Node2",
+      "region": "us-west-2",
+      "active": "true"
+    },
+    {
+      "address": "6e2cb55e4cbe97bf5b1e731d51cc2c285d83cbf9",
+      "ip": "3.19.116.137",
+      "node_name": "Node3",
+      "region": "us-west-2",
+      "active": "true"
+    },
+    {
+      "address": "c056dfc0d1fbc7479db11e61d1b0b57612bf7f17",
+      "ip": "3.14.61.151",
+      "node_name": "Node4",
+      "region": "us-west-2",
+      "active": "true"
+    }
+  ],
+  "chains": [
+    {
+      "Id": 1
+    }
+  ]
+}
+

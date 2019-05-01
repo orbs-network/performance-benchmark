@@ -152,5 +152,11 @@
       "region": "",
       "active": "false"
     }
+  ],
+  "chains": [
+    {
+      "Id": 1000000
+    }
   ]
+
 }
