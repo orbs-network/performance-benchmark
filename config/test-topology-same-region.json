@@ -27,6 +27,34 @@
       "node_name": "Node4",
       "region": "us-west-2",
       "active": "true"
+    },
+    {
+      "address": "e93269e5752cec83b758cbceaeddf4d40e1556c3",
+      "ip": "3.14.49.140",
+      "node_name": "Node5",
+      "region": "us-west-2",
+      "active": "true"
+    },
+    {
+      "address": "006F6e8ca3Da6a205A056Adcb57A937ad4a355a7",
+      "ip": "3.214.126.42",
+      "node_name": "Node6",
+      "region": "us-west-2",
+      "active": "true"
+    },
+    {
+      "address": "2995655cC43C3278b43E16b515C0603A5698BCd2",
+      "ip": "3.215.196.253",
+      "node_name": "Node7",
+      "region": "us-west-2",
+      "active": "true"
+    },
+    {
+      "address": "7F7c18aE67356eEB794fe922378703A019115e40",
+      "ip": "3.90.128.143",
+      "node_name": "Node8",
+      "region": "us-west-2",
+      "active": "true"
     }
   ],
   "chains": [
