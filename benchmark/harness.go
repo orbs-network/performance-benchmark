@@ -108,7 +108,7 @@ func (h *harness) sendTransaction(clientIdx int, senderPublicKey []byte, senderP
 		sendTransaction = client.SendTransaction
 	}
 	response, err = sendTransaction(payload)
-	return
+	return response, txId, err
 }
 
 func (h *harness) runQuery(clientIdx int, senderPublicKey []byte, contractName string, methodName string, args ...interface{}) (response *codec.RunQueryResponse, err error) {
