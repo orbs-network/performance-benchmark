@@ -134,11 +134,11 @@ func (h *harness) getTransactionReceiptProof(clientIdx int, txId string) (respon
 }
 
 func baseUrlEndpoint(ip string, vchain uint32) string {
-	return fmt.Sprintf("http://%s/vchains/%d", ip, vchain)
+	return fmt.Sprintf("http://%s:8081", ip)
 }
 
 func metricsEndpoint(ip string, vchain uint32) string {
-	return fmt.Sprintf("http://%s/vchains/%d/metrics", ip, vchain)
+	return fmt.Sprintf("http://%s:8081/metrics", ip)
 }
 
 type metrics map[string]map[string]interface{}
