@@ -1,0 +1,54 @@
+{
+  "network": [
+    {
+      "address": "a328846cd5b4979d68a8c58a9bdfeee657b34de7",
+      "ip": "35.161.123.97",
+      "node_name": "Node1",
+      "region": "us-east-2a",
+      "active": "true"
+    },
+    {
+      "address": "d27e2e7398e2582f63d0800330010b3e58952ff6",
+      "ip": "35.167.243.123",
+      "node_name": "Node2",
+      "region": "us-east-2a",
+      "active": "true"
+    },
+    {
+      "address": "6e2cb55e4cbe97bf5b1e731d51cc2c285d83cbf9",
+      "ip": "52.35.218.240",
+      "node_name": "Node3",
+      "region": "us-east-2a",
+      "active": "true"
+    },
+    {
+      "address": "c056dfc0d1fbc7479db11e61d1b0b57612bf7f17",
+      "ip": "52.42.4.94",
+      "node_name": "Node4",
+      "region": "us-east-2a",
+      "active": "true"
+    },
+    {
+      "address": "e93269e5752cec83b758cbceaeddf4d40e1556c3",
+      "ip": "54.149.67.22",
+      "node_name": "Node5",
+      "region": "us-east-1b",
+      "active": "true"
+    }
+  ],
+  "chains": [
+    {
+      "Id": 42
+    },
+    {
+      "Id": 2013
+    },
+    {
+      "Id": 9999
+    },
+    {
+      "Id": 6666
+    }
+  ]
+}
+
