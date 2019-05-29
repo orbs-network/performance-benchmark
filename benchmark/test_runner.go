@@ -10,6 +10,8 @@ import (
 	"time"
 )
 
+const PRINT_TX_TIME = false
+
 func getTransactionCount(t *testing.T, h *harness) float64 {
 	var m metrics
 
@@ -55,9 +57,14 @@ func RunLoad(h *harness, config *E2EConfig) []error {
 		panic("No addresses were read from file")
 	}
 	var i uint64
+	if PRINT_TX_TIME {
+		fmt.Println("BLOCK_HEIGHT,BLOCK_TIMESTAMP,CLIENT_IP,RESPONSE_TIME_MILLIS")
+		//fmt.Println("START_TIME,END_TIME,CLIENT_INDEX,BLOCK_HEIGHT,RESPONSE_TIME_MILLIS")
+	}
 	for {
 		now := time.Now()
 		now.Minute()
+		//fmt.Printf("== %s ===> ", now.Format("15:04:05"), )
 		for j := 0; j < txBurst; j++ {
 			wg.Add(1)
 			go func(idx uint64) {
@@ -69,14 +76,31 @@ func RunLoad(h *harness, config *E2EConfig) []error {
 					}
 				}()
 				amount := uint64(ctrlRand.Intn(5))
-				addrIndex := ctrlRand.Intn(len(h.accountAddresses))
-				target := h.accountAddresses[addrIndex]
+				target := h.accountAddresses[ctrlRand.Intn(len(h.accountAddresses))]
 				//fmt.Printf("Transfer %d to address_idx #%d=%s\n", amount, addrIndex, encoding.EncodeHex(target))
+				//clientIdx := 1
 				clientIdx := ctrlRand.Intn(clientsCount)
 				//fmt.Printf("Calling client idx=%d\n", clientIdx)
-				_, _, err2 := h.sendTransaction(clientIdx, OwnerOfAllSupply.PublicKey(), OwnerOfAllSupply.PrivateKey(), "ResettableBenchmarkToken", "transfer", uint64(amount), target)
+				startTime := time.Now()
+				//fmt.Printf(".")
+				response, _, err2 := h.sendTransaction(clientIdx, OwnerOfAllSupply.PublicKey(), OwnerOfAllSupply.PrivateKey(), "ResettableBenchmarkToken", "transfer", uint64(amount), target)
+				endTime := time.Now()
+				addr := h.clients[clientIdx].Endpoint
+				if PRINT_TX_TIME {
+
+					fmt.Printf("%d,%s,%.0d\n",
+						//startTime.Format("15:04:05"),
+						//endTime.Format("15:04:05"),
+						response.BlockHeight,
+						response.BlockTimestamp.Format("15:04:05"),
+						//addr,
+						endTime.Sub(startTime).Nanoseconds()/1000000,
+						//response.TransactionStatus,
+						//response.ExecutionResult,
+					)
+				}
 				if err2 != nil {
-					fmt.Printf("Error sending tx to %s: %s\n", h.clients[clientIdx].Endpoint, err2)
+					fmt.Printf("Error sending tx to %s: %s\n", addr, err2)
 					errors = append(errors, err2)
 				}
 			}(i)
