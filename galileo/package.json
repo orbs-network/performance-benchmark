@@ -7,7 +7,7 @@
   "dependencies": {
     "@slack/client": "^4.8.0",
     "bluebird": "^3.5.3",
-    "lodash": "^4.17.11",
+    "lodash": "^4.17.13",
     "moment": "^2.24.0",
     "nebula": "git://github.com/orbs-network/nebula.git#feature/network-status",
     "shelljs": "^0.8.3"
