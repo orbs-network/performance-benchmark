@@ -10,6 +10,6 @@
     "lodash": "^4.17.11",
     "moment": "^2.24.0",
     "nebula": "git://github.com/orbs-network/nebula.git#feature/network-status",
-    "shelljs": "^0.8.3"
+    "shelljs": "^0.8.5"
   }
 }
